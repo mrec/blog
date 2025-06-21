@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}{{ section.title }}{% endblock title %}
+
+{% block content %}
+<h1 class="title">
+  posts
+</h1>
+<p>Here are some posts. You could see some <a href="{{ get_url(path='/tags') }}">tags</a> instead, if you'd rather.</p>
+<ul>
+  {% for page in section.pages %}
+    {{ macros::post_li(post=page) }}
+  {% endfor %}
+</ul>
+{% endblock content %}

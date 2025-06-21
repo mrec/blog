@@ -1,0 +1,99 @@
+/* Reset (filtered for markdown) */
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, code, img, s, b, u, i, ol, ul, li, table, caption, tbody, tfoot, thead, tr, th, td, details, footer, header, section, summary { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+body { line-height: 1; }
+ol, ul { list-style: none; }
+blockquote { quotes: none; }
+blockquote::before, blockquote::after { content: none; }
+
+/* Standard elements */
+html { scroll-behavior: smooth; }
+body { font-family: "Segoe UI", sans-serif; margin: 0; }
+main { line-height: 1.5; margin: auto; max-width: 50rem; padding: 2rem; }
+p { margin: 1em 0; }
+h1, h2 { font-weight: normal; }
+h1 {  font-size: 2em; margin-bottom: 0.25em; }
+h2 {  font-size: 1.4em;  margin: 0.5em 0; }
+h2:not(h1 + h2) { border-top: 1px solid #ccc; margin-top: 1.5em; padding-top: 0.7em; }
+img { display: block; margin: 1em auto; }
+a { color: #00e; text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:visited { color: #b0b; }
+table { border-collapse: collapse; margin: 1em auto; }
+tbody tr:nth-child(even) { background-color: #f8f8f8 }
+th, td { border: 1px solid #dedede; padding: 0.5em; }
+th { background-color: #f0f0f0; font-weight: bold; }
+ul { list-style: inside disc; padding-left: 0; }
+li { margin-left: 1em; text-indent: 1em hanging; }
+code { font-family: Consolas, monospace; font-size: 0.9em; }
+
+/* Header banner */
+header { 
+	height: 100px; display: flex; align-items: center; justify-content: right; position: relative;
+	background-color: #6982AB; background-image: url("/blog/header-hero.webp"), url("/blog/header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
+}
+header a { 
+	display: block; width: 200px; font-size: 22px; margin: 0 22px 0 110px; text-align: right; 
+	text-shadow: 0 0 7px black, 0 0 7px black, 0 0 7px black, 0 0 7px black; 
+	text-transform: lowercase;
+}
+header a, header a:visited { color:white; }
+header::after { display:block; position: absolute; left: 0; top: 0; width:128px; height: 100px; content: ""; cursor: url("/blog/razor.webp"), auto; }
+body#error_404 header::after { background-image: url("/blog/header-404.webp"); cursor: auto; } /* just amusing myself */
+
+/* Footer */
+footer { 
+	display: flex; justify-content: space-between; gap: 2em; flex-wrap: wrap; width: 100%; 
+	border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; margin: 3em 0 2em 0; padding: 0.7em 0 0.7em 0;
+	text-transform: lowercase;
+	font-size: 0.9rem; 
+}
+footer, footer a, footer a:visited { color: #aaa; }
+
+/* Details shortcode (sub-yak) */
+details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: hidden /* stops children overspilling rounded corners */; }
+details > * { padding: 0.6em 1em; }
+details > summary { background-color: #f0f4f8; cursor: zoom-in; position: relative; }
+details > summary::before { opacity: 0; transition: opacity 0.2s linear; background-image: linear-gradient(0deg, rgba(145, 108, 56, 0.3) 0%, rgba(171, 140, 111, 0.3) 40%, rgba(202, 222, 232, 0.3) 50%, rgba(83, 137, 237, 0.3) 100%); content: ""; position: absolute; left: 0; top: 0; display:block; width: 100%; height: 100%; }
+details > summary:hover::before { opacity:1; /* other summary content now needs position: relative; or it'll be obscured */}
+details > summary::after { content: "🐂"; font-size: 1.4em; float: right; position: relative; top: -0.3em; }
+details > summary > p { display: inline; margin:0; padding: 0; position: relative; }
+details:open > summary { border-bottom: 1px solid #ccd; cursor: zoom-out; }
+details:open > summary::after { content: "🪒"; }
+details > p { background-color: #fcfcff; margin: 0; opacity: 0; } /* this is added by the markdown filter for inline content */
+details:open > p { opacity: 1; transition: opacity 0.2s linear; }
+
+/* Inline code */
+code:not(pre code) { background-color: #f8f8f8; border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
+
+/* Syntax-highlighted code blocks */
+pre { border: 1px solid #ccc; border-radius: 0.3em; padding: 0.6em 1em; }
+pre code { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; }
+
+pre[data-name="invalid"] code::before { 
+	content: "Invalid code!";
+	background-color: #d00; color: white; font-family: sans-serif; font-weight: bold; line-height: 1;
+	border: 2px solid white; border-radius: 0.3em; padding: 0.3em 0.5em;
+}
+@media (any-hover: hover) { /* show warning as overlay, hide on mouseover */
+	pre[data-name="invalid"] { position: relative; }
+	pre[data-name="invalid"] code::before { 
+		display: inline-block; margin: 0.5em; position: absolute; right: 0; top: 0; 
+		opacity: 1; transition: opacity 0.2s linear; 
+	}
+	pre[data-name="invalid"]:hover code::before {
+		opacity: 0;
+	}
+}
+@media (any-hover: none) { /* don't obscure what's probably already a narrow view */
+	pre[data-name="invalid"] code::before {
+		display: block; margin: 0;
+	}
+}
+
+/* Link targets for h1, h2 etc */
+a.zola-anchor { color: inherit; display: inline-block; position: relative; text-decoration: none; }
+a.zola-anchor:hover::before { content: "§"; position: absolute; left: -0.8em; }
+
+/* Meta information shown under the post title; keep it de-emphasized */
+p.frontmatter { color: #aaa; font-size: 0.9rem; margin: 0 0 1.5em 0; }
+p.frontmatter a, p.frontmatter a:visited { color: #aaa; }

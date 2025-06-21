@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ taxonomy.name }}{% endblock title %}
+
+{% block content %}
+<h1 class="title">
+  {{ taxonomy.name }}
+</h1>
+<p>Here are some {{ taxonomy.name }}. You can also see <a href="{{ get_url(path='/blog') }}">a list of all posts</a>. I spoil you, I really do.</p>
+<ul>
+  {% for term in terms %}
+  <li><a href="{{ term.permalink | safe }}">{{ term.name }}</a> ({{ term.page_count }})</li>
+  {% endfor %}
+</ul>
+{% endblock content %}
