@@ -12,6 +12,8 @@ comment = "versions: rust 1.86.0, hashbrown 0.15.4"
 
 This is about a seemingly-minor performance detail that's niggling at me as a Rust beginner working through the Book. It can have a significant impact in some usage scenarios, it's a well-known issue, and a well-known workaround exists. It's just not available in the standard library for stable Rust, and everybody seems weirdly fine with that.
 
+<!-- more -->
+
 I didn't really start digging until I was a bit further along in the Book, so the post mentions some concepts (lifetimes, traits) that you might not have encountered yet if you got a bee in your bonnet at the same point I did.
 
 ## Background

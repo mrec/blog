@@ -9,6 +9,9 @@
   <title>{% block title %}{% endblock title %}</title>
   <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
   <link rel="icon" href="data:,">
+  {% block rss %}
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
+  {% endblock %}
 </head>
 
 <body{% block body_attrs %}{% endblock body_attrs %}>
@@ -21,7 +24,7 @@
     <a href="{{ get_url(path='/blog/about') }}">about</a>
     <a href="{{ get_url(path='/blog') }}">archive</a>
     <a href="mailto:mike.capp@gmail.com">email</a>
-    <a title="TODO">feed</a>
+    <a href="{{ get_url(path='/atom.xml') }}">feed</a>
     <a href="https://github.com/mrec/mrec.github.io/">repo</a>
   </footer>
   </main>

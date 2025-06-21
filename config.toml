@@ -1,25 +1,13 @@
-# The URL the site will be built for
 base_url = "https://mrec.github.io"
-
-# Whether to automatically compile all Sass files in the sass directory
+title = "Never Knowingly Undershaved"
+description = "Probably programming-related, definitely stupidly-titled"
+default_language = "en"
 compile_sass = false
-
-# Whether to build a search index to be used later on by a JavaScript library
 build_search_index = false
-
-# A list of glob patterns specifying asset files to ignore when the content
-# directory is processed. Defaults to none, which means that all asset files are
-# copied over to the `public` directory.
-# Example:
-#     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
 ignored_content = ["**/*.pdn"]
-
-# The default author for pages
 author = "Mike Capp"
-
-taxonomies = [
-    { name = "tags" },
-]
+taxonomies = [ { name = "tags" }, ]
+generate_feeds = true
 
 [markdown]
 external_links_class = "external"
@@ -29,9 +17,6 @@ highlight_code = true
 extra_syntaxes_and_themes = ["highlight_themes"]
 highlight_theme = "QuietLight"
 insert_anchor_links = "heading"
-
-# Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
-# For example, `...` into `…`, `"quote"` into `“curly”` etc
 smart_punctuation = true
 
 [extra]
