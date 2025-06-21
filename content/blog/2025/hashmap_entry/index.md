@@ -118,7 +118,7 @@ Obviously, it's an extra dependency that mostly just repeats what `std` already 
 It also doesn't help us with the `std` maps which the vast majority of Rust code will be using. And there isn't any way to get at `std`'s more fully-featured underlying map; the use of `hashbrown` is an implementation detail, and jealously guarded as such. The `raw_entry` API *is* currently exposed in nightly Rust's `std` behind a feature flag, but a [move to stabilize](https://github.com/rust-lang/rust/issues/56167) was "closed as not planned" in August 2024 so doesn't look likely to go anywhere soon. 
 
 {% details(summary="But if `std`'s map is just a shrinkwrapper, couldn't we `transmute` a reference and...?") %}
-![cat recoiling in horror](/blog/ots/horrified.webp)
+![cat recoiling in horror](horrified.webp)
 
 No, don't do that. Yes, it's a shrinkwrapper, in the sense that `std::collections::HashMap` is literally a struct with one member `base` of type `hashbrown::HashMap`. But you can't transmute it to the type of `base`, because you can't *see* the type of `base`. You could transmute it to the type of *your* `hashbrown::HashMap`, but `std` may not be compiling `hashbrown` with the same flags as you, and everything is going to explode horribly anyway when the versions get out of step. Or, heaven forbid, `std` switches to a different implementation entirely.
 {% end %}
