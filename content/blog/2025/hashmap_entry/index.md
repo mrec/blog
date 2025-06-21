@@ -73,7 +73,7 @@ fn get_mut_or_insert_default_probe2<'a>(map: &'a mut Map, k: &str) -> &'a mut V 
 
 In both cases, Rust complains on the first return that *"returning this value requires that `*map` is borrowed for `'a`"*. Since it's returning a mutable reference to something in our map (indicated by the lifetime), our map reference is considered to have escaped and be roaming around at large now, and we aren't allowed to use it again here. It's frustrating because in both formulations, almost by definition, we're only trying to use it again in the branch where we *didn't* return it the first time! I don't pretend to grasp the subtleties here, but this does feel like a weakness in the borrow checker.
 
-And, it turns out, a well-known one. This exact situation was infamous as "Problem Case #3", which has a nice SCP ring to it, in the epic "non-lexical lifetimes" initiative running from 2017 to 2022. It was deferred from that as being too knotty, but work is ongoing to address it as part of the followup "Polonius" initiative. (I sometimes suspect that >80% of Rust engineer time is spent coming up with clever project names.) A 2024 [blog post](https://smallcultfollowing.com/babysteps/blog/2024/06/02/the-borrow-checker-within/) by Niko Matsakis reassures us that this work is still progressing.
+And, it turns out, a well-known one. This exact situation was infamous as "Problem Case #3" (which has a nice SCP ring to it) in the epic "non-lexical lifetimes" initiative running from 2017 to 2022. It was deferred from that as being too knotty, but work is ongoing to address it as part of the followup "Polonius" initiative. (I sometimes suspect that >80% of Rust engineer time is spent coming up with clever project names.) A 2024 [blog post](https://smallcultfollowing.com/babysteps/blog/2024/06/02/the-borrow-checker-within/) by Niko Matsakis reassures us that this work is still progressing.
 
 Note that even when this work lands, it won't offer a perfect solution; there'd still be that pesky extra lookup on the insertion path. And it's not something we can do anything about for now in any case, so it's time to look elsewhere.
 
@@ -132,10 +132,6 @@ fn get_mut_or_insert_default_hashbrown_nice(map: &'a mut BrownMap, k: &str) -> &
 ```
 
 The chained `or_default()` method here has an `Into<K>` bound on `&Q` (the key reference type) which is how it produces an owned key when needed. 
-
-{% details(summary="Is `Into` the best trait for this bound?") %}
-Personally I was leaning toward a `From<&Q>` bound on `K` rather than an `Into<K>` one on `&Q`. I like this because it adapts to the owned type you need, rather than being opinionated about the reference type you have. For instance, `to_owned` on a `&str` always gives you a `String`, which isn't helpful if what you need is a `Box<str>`. This is a somewhat murky area, though, with a lot of reliance on implied guarantees, a bit of historical baggage, and some conflicting signals being given by the trait docs. I'll dig into it more in a future post.
-{% end %}
 
 I can't find any discussion of stabilizing `entry_ref`, and that isn't exposed in nightly `std`. It isn't even in the `hashbrown` [docs](https://rust-lang.github.io/hashbrown/hashbrown/index.html) hosted under rust-lang.github.io - they're for an ancient version 0.11.2, way behind the 0.15.4 on crates.io. Is `std` just vendoring in an old snapshot and never updating?
 
