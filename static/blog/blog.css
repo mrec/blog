@@ -52,14 +52,11 @@ footer, footer a, footer a:visited { color: #aaa; }
 /* Details shortcode (sub-yak) */
 details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: hidden /* stops children overspilling rounded corners */; }
 details > * { padding: 0.6em 1em; }
-details > summary { background-color: #f0f4f8; cursor: zoom-in; position: relative; }
-details > summary::before { opacity: 0; transition: opacity 0.2s linear; background-image: linear-gradient(0deg, rgba(145, 108, 56, 0.3) 0%, rgba(171, 140, 111, 0.3) 40%, rgba(202, 222, 232, 0.3) 50%, rgba(83, 137, 237, 0.3) 100%); content: ""; position: absolute; left: 0; top: 0; display:block; width: 100%; height: 100%; }
-details > summary:hover::before { opacity:1; /* other summary content now needs position: relative; or it'll be obscured */}
-details > summary::after { content: "🐂"; font-size: 1.4em; float: right; position: relative; top: -0.3em; }
-details > summary > p { display: inline; margin:0; padding: 0; position: relative; }
+details > summary { background-color: #b8d2eb4b; transition: background-color 0.2s linear; cursor: zoom-in; }
+details > summary:hover { background-color: #d29d5d48; }
+details > summary > p { display: inline; margin:0; padding: 0; }
 details:open > summary { border-bottom: 1px solid #ccd; cursor: zoom-out; }
-details:open > summary::after { content: "🪒"; }
-details > p { background-color: #fcfcff; margin: 0; opacity: 0; } /* this is added by the markdown filter for inline content */
+details > p { background-color: #fcfcff; margin: 0; opacity: 0; } /* this is added by the markdown filter */
 details:open > p { opacity: 1; transition: opacity 0.2s linear; }
 
 /* Inline code */
