@@ -8,7 +8,7 @@
   {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
   <title>{% block title %}{% endblock title %}</title>
   <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="{{ get_url(path='/blog/favicon.svg') }}" sizes="any" type="image/svg+xml">
   {% block rss %}
   <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
   {% endblock %}
