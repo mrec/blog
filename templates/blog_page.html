@@ -7,7 +7,7 @@
 
 {% block content %}
   <h1>{{ page.title }}</h1>
-  <p class="frontmatter">
+  <p class="frontmatter subtle">
     {{ page.date }}
     {% if page.taxonomies %} | tags:
       {% for tag in page.taxonomies["tags"] %}

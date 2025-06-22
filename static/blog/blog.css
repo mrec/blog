@@ -5,6 +5,12 @@ ol, ul { list-style: none; }
 blockquote { quotes: none; }
 blockquote::before, blockquote::after { content: none; }
 
+/* Properties */
+:root {
+	--color-subtle-line: #ccc;
+	--color-subtle-text: #767676; /* >4.5:1 contrast */
+}
+
 /* Standard elements */
 html { scroll-behavior: smooth; }
 body { font-family: "Segoe UI", sans-serif; margin: 0; }
@@ -13,11 +19,14 @@ p { margin: 1em 0; }
 h1, h2 { font-weight: normal; }
 h1 {  font-size: 2em; margin-bottom: 0.25em; }
 h2 {  font-size: 1.4em;  margin: 0.5em 0; }
-h2:not(h1 + h2) { border-top: 1px solid #ccc; margin-top: 1.5em; padding-top: 0.7em; }
+h2:not(h1 + h2) { border-top: 1px solid var(--color-subtle-line); margin-top: 1.5em; padding-top: 0.7em; }
 img { display: block; margin: 1em auto; }
+
+/* Hyperlinks */
 a { color: #00e; text-decoration: none; }
 a:hover { text-decoration: underline; }
 a:visited { color: #b0b; }
+
 table { border-collapse: collapse; margin: 1em auto; }
 tbody tr:nth-child(even) { background-color: #f8f8f8 }
 th, td { border: 1px solid #dedede; padding: 0.5em; }
@@ -25,6 +34,9 @@ th { background-color: #f0f0f0; font-weight: bold; }
 ul { list-style: inside disc; padding-left: 0; }
 li { margin-left: 1em; text-indent: 1em hanging; }
 code { font-family: Consolas, monospace; font-size: 0.9em; }
+
+/* Furniture blocks (frontmatter and footer): deemphasize these to keep focus on content */
+.subtle, .subtle a, subtle a:visited { color: var(--color-subtle-text); font-size: 0.9rem; }
 
 /* Header banner */
 header { 
@@ -46,11 +58,10 @@ body#error_404 header::before { background-image: url("/blog/header-404.webp"); 
 /* Footer */
 footer { 
 	display: flex; justify-content: space-between; gap: 2em; flex-wrap: wrap; width: 100%; 
-	border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; margin: 3em 0 2em 0; padding: 0.7em 0 0.7em 0;
+	border: solid var(--color-subtle-line); border-width: 1px 0; margin: 3em 0 2em 0; padding: 0.7em 0 0.7em 0;
 	text-transform: lowercase;
 	font-size: 0.9rem; 
 }
-footer, footer a, footer a:visited { color: #aaa; }
 
 /* Details shortcode (sub-yak) */
 details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: hidden /* stops children overspilling rounded corners */; }
@@ -66,7 +77,7 @@ details:open > p { opacity: 1; transition: opacity 0.2s linear; }
 code:not(pre code) { background-color: #f8f8f8; border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
 
 /* Syntax-highlighted code blocks */
-pre { border: 1px solid #ccc; border-radius: 0.3em; padding: 0.6em 1em; }
+pre { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; padding: 0.6em 1em; }
 pre code { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; }
 
 pre[data-name="invalid"] code::before { 
@@ -91,9 +102,18 @@ pre[data-name="invalid"] code::before {
 }
 
 /* Link targets for h1, h2 etc */
-a.zola-anchor { color: inherit; display: inline-block; position: relative; text-decoration: none; }
+a.zola-anchor { color: inherit; display: inline-block; position: relative; text-decoration: none /* even for prefers-contrast:more since this isn't a "real" link */; }
 a.zola-anchor:hover::before { content: "§"; position: absolute; left: -0.8em; }
 
-/* Meta information shown under the post title; keep it de-emphasized */
-p.frontmatter { color: #aaa; font-size: 0.9rem; margin: 0 0 1.5em 0; }
-p.frontmatter a, p.frontmatter a:visited { color: #aaa; }
+/* Meta information shown under the post title */
+p.frontmatter { margin: 0 0 1.5em 0; }
+p.frontmatter a { text-decoration: underline /* it's mixed with non-link text in the same colour */; }
+
+/* Accessibility accommodations */
+@media (prefers-contrast: more) { /* replace with no-preference to test */
+	:root {
+		--color-subtle-line: grey;
+		--color-subtle-text: black;
+	}
+	a { text-decoration: underline; } /* note that a.zola-anchor is a deliberate exception */
+}
