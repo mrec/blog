@@ -4,7 +4,7 @@ template = "about.html"
 description = "About the 'Never Knowingly Undershaved' blog"
 +++
 
-This blog is a place to put notes to self and general musings. Partly as a record of things I've found while digging into a topic, partly as a form of [rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so are highly unlikely to contain anything groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/) just because I'm in the process of learning it, but who knows what else may creep in later.
+This blog is a place to put notes to self and general musings. Partly as a record of things I've found while digging into a topic, partly as a form of [rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so aim to be informative rather than groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/) just because I'm in the process of learning it, but who knows what else may creep in later.
 
 ## "Never Knowingly Undershaved"?
 
@@ -32,4 +32,4 @@ You can also raise bug reports via the GitHub repo linked in the footer.
 
 ## License
 
-All text is © 2025 Mike Capp under the [CC-BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/) unless otherwise attributed. Image licensing is a bit murkier depending on source, but if it's clearly something produced by me, like a personal photo or a graph of benchmarking results, you can safely assume the same. Code snippets are public domain wherever applicable; they're meant to be illustrative, not novel.
+All text is © 2025 Mike Capp under the [CC-BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/) unless otherwise attributed. Image licensing is a bit murkier depending on source, but if it's clearly something produced by me, like a personal photo or a graph of benchmarking results, you can safely assume the same. Original code snippets are public domain wherever applicable; they're meant to be illustrative, not novel.

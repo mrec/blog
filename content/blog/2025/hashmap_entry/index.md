@@ -39,13 +39,13 @@ I'm more relaxed about `String` now; I still think `Box<str>` is better, I'm jus
 I was a bit surprised that I needed an explicit `'a` lifetime annotation here; I couldn't see any way a `&mut Vec<String>` return value could possibly be aliasing a `&str` parameter, so where's the ambiguity? But Rust's lifetime elision rules don't look at types. If there are two reference parameters and neither of them is `self`, you have to annotate manually. This isn't a criticism! Rust faces ongoing struggles with compilation times, a Sufficiently Smart Borrowck is not necessarily a Sufficiently Fast or Stable Borrowck, and adding the lifetime isn't too onerous.
 {% end %}
 
-This returns a possibly-new `&mut V` to which you can add a name. But `entry`'s key parameter has to be a `String`, rather than the `&str` you're holding as you parse input, and  `to_owned()` is allocating memory on the heap even in the case where the entry already exists and the new key isn't needed. This is jarring given Rust's efficiency claims, especially so early on. In the context of this exercise the overhead is irrelevant since we're being driven by interactive user input, but in a hot loop we'd want to avoid heap allocation if at all possible.
+This returns a possibly-new `&mut V` to which you can add a name. But `entry`'s key parameter has to be a `String`, rather than the `&str` you're holding as you parse input, and  `to_owned()` is allocating memory on the heap even in the case where the entry already exists and the new key isn't needed. This is jarring given Rust's efficiency claims, especially so early on. In the context of this exercise the overhead is irrelevant since we're being driven by interactive user input, but in a hot loop we'd want to avoid heap allocation if we can. Does this post represent an absurd level of detail for a niche issue? Possibly. Is that going to be a running theme for this blog? Almost certainly.
 
 [![An XKCD cartoon modified to poke fun at premature optimization](xkcd386_duty_calls_modified.webp "“Oh no, the official XKCD script font TTF is broken! Better raise a bug.”&#013;“Wait, weren't you working through the Rust Book?”&#013;“WHAT DOES IT LOOK LIKE I'M DOING?”")](https://xkcd.com/386)
 
 ## First attempts
 
-So... *is*  it at all possible? After all, we didn't have this problem with `get`. Why could we pass a `&str` to that but not to `entry`? 
+We didn't have this problem with `get`. Why could we pass a `&str` to that but not to `entry`? 
 
 We could pass a reference because there's no chance that a `get` call will add a new entry. A `HashMap` owns its keys, so it needs owned key values when doing that. 
 
@@ -73,11 +73,11 @@ fn get_mut_or_insert_default_probe2<'a>(map: &'a mut Map, k: &str) -> &'a mut V 
 }
 ```
 
-In both cases, Rust complains on the first return that *"returning this value requires that `*map` is borrowed for `'a`"*. Since it's returning a mutable reference to something in our map (indicated by the lifetime), our map reference is considered to have escaped and be roaming around at large now, and we aren't allowed to use it again here. It's frustrating because in both formulations, almost by definition, we're only trying to use it again in the branch where we *didn't* return it the first time! I don't pretend to grasp the subtleties here, but this does feel like a weakness in the borrow checker.
+In both cases, Rust complains on the first return that *"returning this value requires that `*map` is borrowed for `'a`"*. Since it's returning a mutable reference to something in our map (indicated by the lifetime), our map reference is considered to have escaped and be roaming around at large now, and we aren't allowed to use it again here. It's frustrating because in both formulations, almost by definition, we're only trying to use it again in the branch where we *didn't* return it the first time! The borrow checker can't currently track this kind of conditional borrowing; if it sees that we *might* return a reference, it conservatively assumes we always do.
 
-And, it turns out, a well-known one. This exact situation was infamous as "Problem Case #3" (which has a nice SCP ring to it) in the epic "non-lexical lifetimes" initiative running from 2017 to 2022. It was deferred from that as being too knotty, but work is ongoing to address it as part of the followup "Polonius" initiative. (I sometimes suspect that >80% of Rust engineer time is spent coming up with clever project names.) A 2024 [blog post](https://smallcultfollowing.com/babysteps/blog/2024/06/02/the-borrow-checker-within/) by Niko Matsakis reassures us that this work is still progressing.
+It turns out that this is a well-known issue. This exact situation became infamous as "Problem Case #3" (which has a nice SCP ring to it) in the epic "non-lexical lifetimes" initiative running from 2017 to 2022. It was deferred from that as being too knotty, but work is ongoing to address it as part of the followup "Polonius" initiative. (I sometimes suspect that >80% of Rust engineer time is spent coming up with clever project names.) A 2024 [blog post](https://smallcultfollowing.com/babysteps/blog/2024/06/02/the-borrow-checker-within/) by Niko Matsakis reassures us that this work is still progressing.
 
-Note that even when this work lands, it won't offer a perfect solution; there'd still be that pesky extra lookup on the insertion path. And it's not something we can do anything about for now in any case, so it's time to look elsewhere.
+Note though that even when this work lands, it won't offer a perfect solution; there'd still be that pesky extra lookup on the insertion path. And it's not something we can do anything about for now in any case, so it's time to look elsewhere.
 
 ## Settling for mediocrity
 
@@ -125,7 +125,7 @@ It also doesn't help us with the `std` maps which the vast majority of Rust code
 No, don't do that. Yes, it's a shrinkwrapper, in the sense that `std::collections::HashMap` is literally a struct with one member `base` of type `hashbrown::HashMap`. But you can't transmute it to the type of `base`, because you can't *see* the type of `base`. You could transmute it to the type of *your* `hashbrown::HashMap`, but `std` may not be compiling `hashbrown` with the same flags as you, and everything is going to explode horribly anyway when the versions get out of step. Or, heaven forbid, `std` switches to a different implementation entirely.
 {% end %}
 
-It's mentioned less, probably because it's newer, but `hashbrown` also offers a much more ergonomic alternative: the [`entry_ref`](https://docs.rs/hashbrown/0.15.4/hashbrown/struct.HashMap.html#method.entry_ref) API:
+It's mentioned less, probably because it's newer, but `hashbrown` also offers a much more ergonomic alternative: the [`entry_ref`](https://docs.rs/hashbrown/0.15.4/hashbrown/struct.HashMap.html#method.entry_ref) API.
 
 ```rust
 fn get_mut_or_insert_default_hashbrown_nice(map: &'a mut BrownMap, k: &str) -> &'a mut V {
