@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
   <link rel="icon" href="{{ get_url(path='/blog/favicon.svg') }}" sizes="any" type="image/svg+xml">
   {% block rss %}
-  <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='/blog/atom.xml', trailing_slash=false) }}">
   {% endblock %}
 </head>
 
@@ -24,7 +24,7 @@
     <a href="{{ get_url(path='/blog/about') }}">about</a>
     <a href="{{ get_url(path='/blog') }}">archive</a>
     <a href="mailto:mike.capp@gmail.com">email</a>
-    <a href="{{ get_url(path='/atom.xml') }}">feed</a>
+    <a href="{{ get_url(path='/blog/atom.xml') }}">feed</a>
     <a href="https://github.com/mrec/mrec.github.io/">repo</a>
   </footer>
   </main>

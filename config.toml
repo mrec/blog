@@ -7,7 +7,7 @@ build_search_index = false
 ignored_content = ["**/*.pdn"]
 author = "Mike Capp"
 taxonomies = [ { name = "tags" }, ]
-generate_feeds = true
+generate_feeds = false
 
 [markdown]
 external_links_class = "external"
