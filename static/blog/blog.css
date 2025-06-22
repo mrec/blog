@@ -37,8 +37,11 @@ header a {
 	text-transform: lowercase;
 }
 header a, header a:visited { color:white; }
-header::after { display:block; position: absolute; left: 0; top: 0; width:128px; height: 100px; content: ""; cursor: url("/blog/razor.webp"), auto; }
-body#error_404 header::after { background-image: url("/blog/header-404.webp"); cursor: auto; } /* just amusing myself */
+header::before { 
+	display:block; position: absolute; left: 0; top: 0; width:128px; height: 100px; content: ""; z-index: 1;
+	cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto;
+}
+body#error_404 header::before { background-image: url("/blog/header-404.webp"); cursor: auto; } /* just amusing myself */
 
 /* Footer */
 footer { 
