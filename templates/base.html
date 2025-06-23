@@ -21,11 +21,13 @@
   <main>
     {% block content %} {% endblock content %}
   <footer class="subtle">
-    <a href="{{ get_url(path='/blog/about') }}">about</a>
-    <a href="{{ get_url(path='/blog') }}">archive</a>
-    <a href="mailto:mike.capp@gmail.com">email</a>
-    <a href="{{ get_url(path='/blog/atom.xml') }}">feed</a>
-    <a href="https://github.com/mrec/mrec.github.io/">repo</a>
+    <nav aria-label="Footer">
+      <a href="{{ get_url(path='/blog/about') }}">about</a>
+      <a href="{{ get_url(path='/blog') }}">archive</a>
+      <a href="mailto:mike.capp@gmail.com">email</a>
+      <a href="{{ get_url(path='/blog/atom.xml') }}">feed</a>
+      <a href="https://github.com/mrec/mrec.github.io/">repo</a>
+    </nav>
   </footer>
   </main>
 </body>
