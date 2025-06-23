@@ -7,6 +7,8 @@ blockquote::before, blockquote::after { content: none; }
 
 /* Properties */
 :root {
+	--color-link: #3367d6;
+	--color-link-v: #b0b;
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
 	--fade: 0.2s linear;
@@ -24,9 +26,9 @@ h2:not(h1 + h2) { border-top: 1px solid var(--color-subtle-line); margin-top: 1.
 img { display: block; margin: 1em auto; }
 
 /* Hyperlinks */
-a { color: #00e; text-decoration: none; }
+a { color: var(--color-link); text-decoration: none; }
 a:hover { text-decoration: underline; }
-a:visited { color: #b0b; }
+a:visited { color: var(--color-link-v); }
 
 table { border-collapse: collapse; margin: 1em auto; }
 tbody tr:nth-child(even) { background-color: #f8f8f8 }
@@ -49,7 +51,7 @@ header a {
 	text-shadow: 0 0 7px black, 0 0 7px black, 0 0 7px black, 0 0 7px black; 
 	text-transform: lowercase;
 }
-header a, header a:visited { color:white; }
+header a, header a:visited { color:white; } /* don't make this a property, it won't change in dark mode */
 header::before { 
 	display:block; position: absolute; left: 0; top: 0; width:128px; height: 100px; content: ""; z-index: 1;
 	cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto;
@@ -65,7 +67,7 @@ footer nav {
 }
 
 /* Details shortcode (sub-yak) */
-details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: hidden /* stops children overspilling rounded corners */; }
+details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; }
 details > * { padding: 0.6em 1em; }
 details > summary { background-color: #b8d2eb4b; transition: background-color var(--fade); cursor: zoom-in; }
 details > summary:hover { background-color: #d29d5d48; }
