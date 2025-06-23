@@ -1,20 +1,19 @@
+{% if page -%}
+  {% set title = page.title -%}
+{% elif section %}
+  {%- set title = section.title -%}
+{% elif term -%}
+  {%- set title = taxonomy.name ~ "/" ~ term.name -%}
+{% elif taxonomy -%}
+  {%- set title = taxonomy.name -%}
+{% elif not current_path -%}
+  {%- set title = "404 not found" -%}
+  {%- set yakmask = "error-404" -%}
+{% else -%}
+  {# don't set anything - we want to break at build time #}
+{% endif -%}
 <!DOCTYPE html>
 <html lang="en-GB">
-
-{% if page %}
-  {% set title = page.title %}
-{% elif section %}
-  {% set title = section.title %}
-{% elif term %}
-  {% set title = taxonomy.name ~ "/" ~ term.name %}
-{% elif taxonomy %}
-  {% set title = taxonomy.name %}
-{% elif not current_path %} {# by process of elimination #}
-  {% set title = "404 not found" %}
-{% else %}
-  {# don't set anything - we want to break at build time #}
-{% endif %}
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,9 +26,13 @@
   <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='/blog/atom.xml', trailing_slash=false) }}">
   {% endblock %}
 </head>
-
-<body{% block body_attrs %}{% endblock body_attrs %}>
+<body>
   <header>
+    {% if yakmask -%}
+      <img id="yakmask" alt="" src="/blog/doodleyaks/{{ yakmask }}.webp"/>
+    {%- else -%}
+      <div id="yakmask"></div>
+    {%- endif %}
     <a href="{{ get_url(path='/blog/') }}">Never Knowingly Undershaved</a>
   </header>
   <main>
