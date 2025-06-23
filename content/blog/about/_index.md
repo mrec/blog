@@ -1,5 +1,5 @@
 +++
-title = "About"
+title = "about"
 template = "about.html"
 description = "About the 'Never Knowingly Undershaved' blog"
 +++

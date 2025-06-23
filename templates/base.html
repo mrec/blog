@@ -1,12 +1,26 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 
+{% if page %}
+  {% set title = page.title %}
+{% elif section %}
+  {% set title = section.title %}
+{% elif term %}
+  {% set title = taxonomy.name ~ "/" ~ term.name %}
+{% elif taxonomy %}
+  {% set title = taxonomy.name %}
+{% elif not current_path %} {# by process of elimination #}
+  {% set title = "404 not found" %}
+{% else %}
+  {# don't set anything - we want to break at build time #}
+{% endif %}
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="{{config.author}}">
   {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
-  <title>{% block title %}{% endblock title %}</title>
+  <title>{{ title }} | {{ config.title }}</title>
   <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
   <link rel="icon" href="{{ get_url(path='/blog/favicon.svg') }}" sizes="any" type="image/svg+xml">
   {% block rss %}
@@ -19,6 +33,7 @@
     <a href="{{ get_url(path='/blog/') }}">Never Knowingly Undershaved</a>
   </header>
   <main>
+    <h1>{{ title }}</h1>
     {% block content %} {% endblock content %}
   <footer class="subtle">
     <nav aria-label="Footer">
