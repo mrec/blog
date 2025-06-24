@@ -73,7 +73,6 @@ details { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; font
 details > * { padding: 0.6em 1em; }
 details > summary { background-color: var(--color-subtle-bg); transition: background-color var(--fade); cursor: zoom-in; }
 details > summary:hover { background-color: var(--color-details-summary-hover); }
-details > summary > p { display: inline; margin:0; padding: 0; }
 details:open > summary { border-bottom: 1px solid var(--color-subtle-line); cursor: zoom-out; }
 details > p { margin: 0; opacity: 0; } /* this is added by the markdown filter */
 details:open > p { opacity: 1; transition: opacity var(--fade); }

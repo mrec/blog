@@ -1,8 +1,5 @@
 <details>
-  <summary>
-
-{{summary}} 
-  </summary>
+<summary>{{summary | markdown(inline=true) | safe}}</summary>
 
 {{body}}
 </details>
