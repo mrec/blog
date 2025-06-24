@@ -12,6 +12,8 @@ blockquote::before, blockquote::after { content: none; }
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
 	--color-details-summary-hover: #ffdeba;
+	--color-warn-fg: white; /* for code blocks */
+	--color-warn-bg: #d00; /* ditto */
 	--fade: 0.2s linear;
 }
 
@@ -82,25 +84,19 @@ code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid
 /* Syntax-highlighted code blocks */
 pre { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; padding: 0.6em 1em; }
 pre code { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; }
-
-pre[data-name="invalid"] code::before { 
-	content: "Invalid code!";
-	background-color: #d00; color: white; font-family: sans-serif; font-weight: bold; line-height: 1;
-	border: 2px solid white; border-radius: 0.3em; padding: 0.3em 0.5em;
+pre[data-name="invalid"] span:first-of-type { /* note, need important! to override highlighter's style attributes */
+	color: var(--color-warn-fg) !important; font-style: normal !important; text-decoration: none !important; font-weight: bold !important;
+	background-color: var(--color-warn-bg);  font-family: sans-serif;  line-height: 1; display: block;
+	border: 2px solid var(--color-warn-fg); border-radius: 0.3em; padding: 0.3em 0.5em;
 }
 @media (any-hover: hover) { /* show warning as overlay, hide on mouseover */
 	pre[data-name="invalid"] { position: relative; }
-	pre[data-name="invalid"] code::before { 
-		display: inline-block; margin: 0.5em; position: absolute; right: 0; top: 0; 
+	pre[data-name="invalid"] span:first-of-type { 
+		margin: 0.5em; position: absolute; right: 0; top: 0; 
 		opacity: 1; transition: opacity var(--fade); 
 	}
-	pre[data-name="invalid"]:hover code::before {
+	pre[data-name="invalid"]:hover span:first-of-type {
 		opacity: 0;
-	}
-}
-@media (any-hover: none) { /* don't obscure what's probably already a narrow view */
-	pre[data-name="invalid"] code::before {
-		display: block; margin: 0;
 	}
 }
 

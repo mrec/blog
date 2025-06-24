@@ -12,8 +12,6 @@ comment = "versions: rust 1.86.0, hashbrown 0.15.4"
 
 This is about a seemingly-minor performance detail that's niggling at me as a Rust beginner working through the Book. It can have a significant impact in some usage scenarios, it's a well-known issue, and a well-known workaround exists. It's just not available in the standard library for stable Rust, and everybody seems weirdly fine with that.
 
-<!-- more -->
-
 I didn't really start digging until I was a bit further along in the Book, so the post mentions some concepts (lifetimes, traits) that you might not have encountered yet if you got a bee in your bonnet at the same point I did.
 
 ## Background
@@ -56,6 +54,7 @@ We could pass a `&str` rather than a `&String` because the method signature is g
 This doesn't help us with `entry`, because of the key ownership requirement. What else could we try? Well, the obvious approach would be to do a `get_mut` first, and only resort to inserting when we don't find an existing entry. Unlike `entry` we're adding an extra lookup in the insertion case, but the whole point of the optimization we're attempting is that insertions will be the exception rather than the rule. So:
 
 ```rust,name=invalid
+// does not compile
 fn get_mut_or_insert_default_probe1<'a>(map: &'a mut Map, k: &str) -> &'a mut V {
     match map.get_mut(k) {
         Some(v) => v,
@@ -67,6 +66,7 @@ fn get_mut_or_insert_default_probe1<'a>(map: &'a mut Map, k: &str) -> &'a mut V 
 This doesn't work. The borrow checker says we're trying to have two mutable references to the map at the same time. An `if let` version doesn't fare any better:
 
 ```rust,name=invalid
+// does not compile
 fn get_mut_or_insert_default_probe2<'a>(map: &'a mut Map, k: &str) -> &'a mut V {
     if let Some(v) = map.get_mut(k) {
         return v;
