@@ -1,7 +1,7 @@
 +++
 title = "about"
 template = "about.html"
-description = "About the 'Never Knowingly Undershaved' blog"
+description = "General information about the blog including subject, format, credits, contact info and license"
 +++
 
 This blog is a place to put notes to self and general musings. Partly as a record of things I've found while digging into a topic, partly as a form of [rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so aim to be informative rather than groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/) just because I'm in the process of learning it, but who knows what else may creep in later.
