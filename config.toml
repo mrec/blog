@@ -21,4 +21,4 @@ smart_punctuation = true
 
 [extra]
 tag_descriptions = { meta = "this blog itself", performance = "making things go fast(er)", rust = "the Rust programming language" }
-tag_doodles = []
+tag_doodles = [] # ["performance"]

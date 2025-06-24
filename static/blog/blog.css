@@ -48,7 +48,7 @@ header {
 	background-color: #6982AB; background-image: url("/blog/header-hero.webp"), url("/blog/header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
 }
 header a { 
-	display: block; width: 200px; font-size: 22px; margin: 0 22px 0 110px; text-align: right; 
+	display: block; max-width: 160px; font-size: 22px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
 	text-shadow: 0 0 7px black, 0 0 7px black, 0 0 7px black, 0 0 7px black; 
 	text-transform: lowercase;
 }
