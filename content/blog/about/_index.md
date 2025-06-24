@@ -14,7 +14,7 @@ For anyone wondering about the name, it's a reference to [yak shaving](https://s
 
 The format is going to be fairly minimalistic. I love the concept and values of the [quiet web](https://briankoberlein.com/tech/quiet-web/), and my ideal design for a webpage looks suspiciously like Reader View but with slightly more yaks. There will be absolutely no ads, trackers, analytics, cookies, or JavaScript. Anything that's not subject matter should stay out of the way as far as possible.
 
-I do like HTML's newish `<details>` element as a way to capture optional digressions without breaking the flow of the main topic. I think of these as sub-yaks, fractally budding from the Great Universal Mandelyak.
+I do like HTML's newish `<details>` element as a way to capture optional digressions without breaking the flow of the main topic. I think of these as sub-yaks, fractally budding from the Great Universal Mandelyak. I still have some lingering concerns about feed reader support, but I've started to see other blogs use them and so am taking the plunge.
 
 ## Credits
 

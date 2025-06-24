@@ -7,7 +7,7 @@ date = 2025-06-11
 tags = ["meta"]
 +++
 
-*(Note: most of this post has since been subsumed into the [About](@/blog/about/_index.md) page.)*
+*(Note: this post has since been subsumed into the [about](@/blog/about/_index.md) page.)*
 
 This blog is a place to put various "notes to self". Partly as a record of things I've found while digging into a topic, partly as a form of [rubberducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so aim to be informative rather than groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/), but who knows what else may creep in later.
 
