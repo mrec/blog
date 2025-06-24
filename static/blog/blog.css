@@ -8,8 +8,10 @@ blockquote::before, blockquote::after { content: none; }
 :root {
 	--color-link: #3367d6;
 	--color-link-v: #b0b;
+	--color-subtle-bg: #fafafa;
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
+	--color-details-summary-hover: #ffdeba;
 	--fade: 0.2s linear;
 }
 
@@ -30,7 +32,7 @@ a:hover { text-decoration: underline; }
 a:visited { color: var(--color-link-v); }
 
 table { border-collapse: collapse; margin: 1em auto; }
-tbody tr:nth-child(even) { background-color: #f8f8f8 }
+tbody tr:nth-child(even) { background-color: var(--color-subtle-bg); }
 th, td { border: 1px solid #dedede; padding: 0.5em; }
 th { background-color: #f0f0f0; font-weight: bold; }
 ul { list-style: inside disc; padding-left: 0; }
@@ -65,17 +67,17 @@ footer nav {
 }
 
 /* Details shortcode (sub-yak) */
-details { border: 1px solid #ccd; border-radius: 0.3em; font-size: small; margin: 1em 0; }
+details { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: clip; }
 details > * { padding: 0.6em 1em; }
-details > summary { background-color: #b8d2eb4b; transition: background-color var(--fade); cursor: zoom-in; }
-details > summary:hover { background-color: #d29d5d48; }
+details > summary { background-color: var(--color-subtle-bg); transition: background-color var(--fade); cursor: zoom-in; }
+details > summary:hover { background-color: var(--color-details-summary-hover); }
 details > summary > p { display: inline; margin:0; padding: 0; }
-details:open > summary { border-bottom: 1px solid #ccd; cursor: zoom-out; }
-details > p { background-color: #fcfcff; margin: 0; opacity: 0; } /* this is added by the markdown filter */
+details:open > summary { border-bottom: 1px solid var(--color-subtle-line); cursor: zoom-out; }
+details > p { margin: 0; opacity: 0; } /* this is added by the markdown filter */
 details:open > p { opacity: 1; transition: opacity var(--fade); }
 
 /* Inline code */
-code:not(pre code) { background-color: #f8f8f8; border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
+code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
 
 /* Syntax-highlighted code blocks */
 pre { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; padding: 0.6em 1em; }
