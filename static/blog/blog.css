@@ -11,6 +11,7 @@ blockquote::before, blockquote::after { content: none; }
 	--color-subtle-bg: #fafafa;
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
+	--color-xtrasubtle-bg: #fcfcfc;
 	--color-details-summary-hover: #ffdeba;
 	--color-warn-fg: white; /* for code blocks */
 	--color-warn-bg: #d00; /* ditto */
@@ -23,7 +24,7 @@ body { font-family: "Segoe UI", sans-serif; margin: 0; }
 main { line-height: 1.5; margin: auto; max-width: 50rem; padding: 2rem; }
 p { margin: 1em 0; }
 h1, h2 { font-weight: normal; }
-h1 {  font-size: 2em; margin-bottom: 0.25em; }
+h1 {  font-size: 2em; margin-bottom: 0.25em; line-height: 1.3; }
 h2 {  font-size: 1.4em;  margin: 0.5em 0; }
 h2:not(h1 + h2) { border-top: 1px solid var(--color-subtle-line); margin-top: 1.5em; padding-top: 0.7em; }
 img { display: block; margin: 1em auto; }
@@ -34,9 +35,9 @@ a:hover { text-decoration: underline; }
 a:visited { color: var(--color-link-v); }
 
 table { border-collapse: collapse; margin: 1em auto; }
-tbody tr:nth-child(even) { background-color: var(--color-subtle-bg); }
-th, td { border: 1px solid #dedede; padding: 0.5em; }
-th { background-color: #f0f0f0; font-weight: bold; }
+thead tr { background-color: var(--color-subtle-bg); font-weight: bold; }
+tbody tr:nth-child(even) { background-color: var(--color-xtrasubtle-bg); }
+th, td { border: 1px solid var(--color-subtle-line); padding: 0.5em; }
 ul { list-style: inside disc; padding-left: 0; }
 li { margin-left: 1em; text-indent: 1em hanging; }
 code { font-family: Consolas, monospace; font-size: 0.9em; }
@@ -49,16 +50,14 @@ header {
 	height: 100px; display: flex; align-items: center; justify-content: right; position: relative;
 	background-color: #6982AB; background-image: url("/blog/header-hero.webp"), url("/blog/header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
 }
-header a { 
+header img#yakmask, header div#shavemask { display:block; position: absolute; left: 0; top: 0; min-width:128px; height: 100px; margin: 0; }
+header div#shavemask { cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto /* just amusing myself */; }
+header a#homelink { 
 	display: block; max-width: 160px; font-size: 22px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
 	text-shadow: 0 0 7px black, 0 0 7px black, 0 0 7px black, 0 0 7px black; 
 	text-transform: lowercase;
 }
-header a, header a:visited { color:white; } /* don't make this a property, it won't change in dark mode */
-header #yakmask { 
-	display:block; position: absolute; left: 0; top: 0; min-width:128px; height: 100px; z-index: 1; margin: 0; 
-	cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto; /* just amusing myself */
-}
+header a#homelink, header a#homelink:visited { color:white; } /* don't make this a property, it won't change in dark mode */
 
 /* Footer */
 footer nav { 
@@ -69,24 +68,24 @@ footer nav {
 }
 
 /* Details shortcode (sub-yak) */
-details { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; font-size: small; margin: 1em 0; overflow: clip; }
+details { background-color: var(--color-xtrasubtle-bg); border: 1px solid var(--color-subtle-line); border-left-width: 8px; font-size: small; line-height: 1.7; margin: 1em 0; }
 details > * { padding: 0.6em 1em; }
 details > summary { background-color: var(--color-subtle-bg); transition: background-color var(--fade); cursor: zoom-in; }
 details > summary:hover { background-color: var(--color-details-summary-hover); }
 details:open > summary { border-bottom: 1px solid var(--color-subtle-line); cursor: zoom-out; }
-details > p { margin: 0; opacity: 0; } /* this is added by the markdown filter */
+details > p { margin: 0; opacity: 0; }
 details:open > p { opacity: 1; transition: opacity var(--fade); }
 
 /* Inline code */
 code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
 
 /* Syntax-highlighted code blocks */
-pre { border: 1px solid var(--color-subtle-line); border-radius: 0.3em; padding: 0.6em 1em; }
+pre { border: 1px solid var(--color-subtle-line); padding: 0.6em 1em; }
 pre code { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; }
 pre[data-name="invalid"] span:first-of-type { /* note, need important! to override highlighter's style attributes */
 	color: var(--color-warn-fg) !important; font-style: normal !important; text-decoration: none !important; font-weight: bold !important;
-	background-color: var(--color-warn-bg);  font-family: sans-serif;  line-height: 1; display: block;
-	border: 2px solid var(--color-warn-fg); border-radius: 0.3em; padding: 0.3em 0.5em;
+	background-color: var(--color-warn-bg); font-family: sans-serif;  line-height: 1; display: block;
+	border: 2px solid var(--color-warn-fg); padding: 0.3em 0.5em;
 }
 @media (any-hover: hover) { /* show warning as overlay, hide on mouseover */
 	pre[data-name="invalid"] { position: relative; }
