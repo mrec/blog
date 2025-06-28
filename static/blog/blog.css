@@ -54,7 +54,7 @@ header img#yakmask, header div#shavemask { display:block; position: absolute; le
 header div#shavemask { cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto /* just amusing myself */; }
 header a#homelink { 
 	display: block; max-width: 160px; font-size: 22px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
-	text-shadow: 0 0 7px black, 0 0 7px black, 0 0 7px black, 0 0 7px black; 
+	text-shadow: -2px 2px 7px black, -2px 2px 7px black, -2px 2px 7px black; 
 	text-transform: lowercase;
 }
 header a#homelink, header a#homelink:visited { color:white; } /* don't make this a property, it won't change in dark mode */
