@@ -32,4 +32,4 @@ You can also raise bug reports via the GitHub repo linked in the footer.
 
 ## License
 
-All text is © 2025 Mike Capp under the [CC-BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/) unless otherwise attributed. Image licensing is a bit murkier depending on source, but if it's clearly something produced by me, like a personal photo or a graph of benchmarking results, you can safely assume the same. Original code snippets are public domain wherever applicable; they're meant to be illustrative, not novel.
+All text is © 2025 Mike Capp under the [CC-BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/) unless otherwise attributed. Image licensing is a bit murkier depending on source, but if it's clearly something produced by me, like a personal photo or a graph of benchmarking results, you can safely assume the same. Original code snippets are public domain via the [Unlicense](https://unlicense.org/) wherever applicable; they're meant to be illustrative, not novel.
