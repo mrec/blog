@@ -1,3 +1,3 @@
 {% macro post_li(post) %}
-<li><a href="{{ post.permalink | safe }}"{% if post.description %} title="{{post.description}}"{% endif %}>{{ post.date }} - {{ post.title }}</a></li>
+<li><a href="{{ post.permalink | safe }}"{% if post.description %} title="{{post.description}}"{% endif %}>{{ post.date }} - {{ post.title | markdown(inline=true) | safe }}</a></li>
 {% endmacro post_li %}

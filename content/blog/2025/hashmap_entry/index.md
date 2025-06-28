@@ -1,6 +1,6 @@
 +++
-title = "The problem with Rust's HashMap::entry"
-description = "A look at performance issues with unnecessary owned key construction in Rust's HashMap::entry API"
+title = "The problem with Rust's `HashMap::entry`"
+description = "A look at performance issues with unnecessary owned key construction in Rust's `HashMap::entry` API"
 date = 2025-06-16
 
 [taxonomies]

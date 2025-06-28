@@ -4,8 +4,8 @@
 {% block content %}
 <p>Here are some posts. You could see some <a href="{{ get_url(path='/tags') }}">tags</a> instead, if you'd rather.</p>
 <ul>
-  {% for page in section.pages %}
+  {%- for page in section.pages -%}
     {{ macros::post_li(post=page) }}
-  {% endfor %}
+  {%- endfor -%}
 </ul>
 {% endblock content %}

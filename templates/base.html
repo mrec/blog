@@ -1,11 +1,12 @@
 {% if page -%}
-  {%- set title = page.title -%}
-  {%- set desc = page.description -%}
+  {%- set title = page.title | markdown(inline=true) -%}
+  {%- set desc = page.description | markdown(inline=true) -%}
 {% elif section %}
-  {%- set title = section.title -%}
-  {%- set desc = section.description -%}
+  {%- set title = section.title | markdown(inline=true) -%}
+  {%- set desc = section.description | markdown(inline=true) -%}
 {% elif term -%}
-  {%- set title = taxonomy.name ~ "/" ~ term.name -%}
+  {%- set taxpath = get_url(path="/" ~ taxonomy.name) | safe -%}
+  {%- set title = "<a href='" ~ taxpath ~ "'>" ~ taxonomy.name ~ "</a>/" ~ term.name -%}
   {%- set desc = "A list of posts tagged with '" ~ term.name ~ "'" -%}
   {%- if taxonomy.name == "tags" and config.extra.tag_doodles is containing(term.name) -%}
     {%- set yakmask = "tags-" ~ term.name -%}
@@ -26,8 +27,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="{{config.author}}">
-    <meta name="description" content="{{ desc }}">
-    <title>{{ title }} | {{ config.title }}</title>
+    <meta name="description" content="{{ desc | striptags }}">
+    <title>{{ title | striptags }} | {{ config.title }}</title>
     <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
     <link rel="icon" href="{{ get_url(path='/blog/favicon.svg') }}" sizes="any" type="image/svg+xml">
     {% block rss -%}
@@ -43,7 +44,7 @@
       <a id="homelink" href="{{ get_url(path='/blog/') }}" title="Go to the blog's home page">{{ config.title }}</a>
     </header>
     <main>
-      <h1>{{ title }}</h1>
+      <h1>{{ title | safe}}</h1>
       {% block content %} {% endblock content %}
       <footer class="subtle">
         <nav aria-label="Footer">
