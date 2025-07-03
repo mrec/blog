@@ -29,30 +29,30 @@
     <meta name="author" content="{{config.author}}">
     <meta name="description" content="{{ desc | striptags }}">
     <title>{{ title | striptags }} | {{ config.title }}</title>
-    <link rel="stylesheet" href="{{ get_url(path='/blog/blog.css') }}">
-    <link rel="icon" href="{{ get_url(path='/blog/favicon.svg') }}" sizes="any" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ get_url(path='/blog.css') }}">
+    <link rel="icon" href="{{ get_url(path='/favicon.svg') }}" sizes="any" type="image/svg+xml">
     {% block rss -%}
-    <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='/blog/atom.xml', trailing_slash=false) }}">
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="{{ get_url(path='/atom.xml', trailing_slash=false) }}">
     {%- endblock %}
   </head>
   <body>
     <header>
       {% if yakmask -%}
-        <img id="yakmask" alt="" src="/blog/doodleyaks/{{ yakmask }}.webp">
+        <img id="yakmask" alt="" src="/doodleyaks/{{ yakmask }}.webp">
       {%- endif %}
       <div id="shavemask"></div>
-      <a id="homelink" href="{{ get_url(path='/blog/') }}" title="Go to the blog's home page">{{ config.title }}</a>
+      <a id="homelink" href="{{ get_url(path='/') }}" title="Go to the blog's home page">{{ config.title }}</a>
     </header>
     <main>
       <h1>{{ title | safe}}</h1>
       {% block content %} {% endblock content %}
       <footer class="subtle">
         <nav aria-label="Footer">
-          <a href="{{ get_url(path='/blog/about') }}">about</a>
-          <a href="{{ get_url(path='/blog') }}">archive</a>
+          <a href="{{ get_url(path='/about') }}">about</a>
+          <a href="{{ get_url(path='/') }}">archive</a>
           <a href="mailto:mike.capp@gmail.com">email</a>
-          <a href="{{ get_url(path='/blog/atom.xml') }}">feed</a>
-          <a href="https://github.com/mrec/mrec.github.io/">repo</a>
+          <a href="{{ get_url(path='/atom.xml') }}">feed</a>
+          <a href="https://github.com/mrec/blog">repo</a>
         </nav>
       </footer>
     </main>

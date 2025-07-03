@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-  <p>Welcome! Are you lost?</p>
   <p>Whatever you were looking for, it isn't here. If you think it should have been, let me know.</p>
-  <p><a href="/blog/">back to the blog</a></p>
+  <p><a href="{{ get_url(path='/') }}">back to the blog</a></p>
 {% endblock content %}

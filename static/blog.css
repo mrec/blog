@@ -48,10 +48,10 @@ code { font-family: Consolas, monospace; font-size: 0.9em; }
 /* Header banner */
 header { 
 	height: 100px; display: flex; align-items: center; justify-content: right; position: relative;
-	background-color: #6982AB; background-image: url("/blog/header-hero.webp"), url("/blog/header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
+	background-color: #6982AB; background-image: url("/header-hero.webp"), url("/header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
 }
 header img#yakmask, header div#shavemask { display:block; position: absolute; left: 0; top: 0; min-width:128px; height: 100px; margin: 0; }
-header div#shavemask { cursor: image-set(url("/blog/razor.webp") 1x, url("/blog/razor-2x.webp") 2x), auto /* just amusing myself */; }
+header div#shavemask { cursor: image-set(url("/razor.webp") 1x, url("/razor-2x.webp") 2x), auto /* just amusing myself */; }
 header a#homelink { 
 	display: block; max-width: 160px; font-size: 22px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
 	text-shadow: -2px 2px 7px black, -2px 2px 7px black, -2px 2px 7px black; 
