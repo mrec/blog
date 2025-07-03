@@ -20,5 +20,11 @@ insert_anchor_links = "heading"
 smart_punctuation = true
 
 [extra]
-tag_descriptions = { meta = "this blog itself", performance = "making things go fast(er)", rust = "the Rust programming language" }
 tag_doodles = [] # ["performance"]
+
+[extra.tag_descriptions]
+a11y = "making UIs more accessible"
+meta = "this blog itself"
+perf = "making things go fast(er)"
+rust = "the Rust programming language"
+web = "Web technologies such as HTML, CSS and JavaScript"
