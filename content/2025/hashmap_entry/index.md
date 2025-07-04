@@ -4,7 +4,7 @@ description = "A look at performance issues with unnecessary owned key construct
 date = 2025-06-16
 
 [taxonomies]
-tags = ["rust", "performance"]
+tags = ["rust", "perf"]
 
 [extra]
 comment = "versions: rust 1.86.0, hashbrown 0.15.4"

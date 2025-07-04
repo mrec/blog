@@ -75,6 +75,7 @@ details > summary:hover { background-color: var(--color-details-summary-hover); 
 details:open > summary { border-bottom: 1px solid var(--color-subtle-line); cursor: zoom-out; }
 details > p { margin: 0; opacity: 0; }
 details:open > p { opacity: 1; transition: opacity var(--fade); }
+details > pre { margin: 0 1em; }
 
 /* Inline code */
 code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
