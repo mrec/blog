@@ -47,7 +47,7 @@
         {% if page.summary %}
         <summary type="html">{{ page.summary }} (Post contains content that feed readers may not support, {{ "<a href='" ~ page.permalink ~ "'>continue reading at the blog.</a>" | escape_xml | safe }})</summary>
         {% else %}
-        <content type="html" xml:base="{{ page.permalink | escape_xml | safe }}">{{ page.content }}</content>
+        <content type="html" xml:base="{{ page.permalink | escape_xml | safe }}">{{ page.content }}{{"<p><em>(End of post)</em></p>" | escape_xml | safe }}</content>
         {% endif %}
     </entry>
     {%- endfor %}
