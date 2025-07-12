@@ -16,7 +16,7 @@ It's amazing how effective yak-shaving can be for leading you to ~~absurdly nich
 
 !['Pepe Silvia' meme showing a crazed conspiracy loon in front of his theory wall](pepe_silvia.webp "Oh dear")
 
-We'll start with general background, then survey some of the perceptual considerations that make this area such a challenge to model. From there we'll get into the technical weeds, exploring the analytic and image-based approaches used by Lighthouse and Firefox respectively, and describing ideas implemented in the Proof-of-Concept demonstrator. These sections include code and formulae.
+We'll start with general background, then survey some of the perceptual considerations that make this area such a challenge to model. From there we'll get into the technical weeds, exploring the analytic and image-based approaches used by Lighthouse and Firefox respectively, and describing ideas implemented in the working proof-of-concept. These sections include code and formulae.
 
 ## Background
 

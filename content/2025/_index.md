@@ -1,4 +1,4 @@
 +++
-redirect_to = "/blog"
+redirect_to = "/"
 transparent = true
 +++
