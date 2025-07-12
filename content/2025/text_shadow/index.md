@@ -39,10 +39,7 @@ CSS has a recent `@media` feature called [`prefers-contrast`](https://developer.
 
 ```css
 @media (prefers-contrast: more) { /* replace with no-preference to test */
-    header a { 
-        background-color: #000a; 
-        box-shadow: 0 0 0.5em #000a; 
-    }
+    header a { background-color: #000a; box-shadow: 0 0 0.5em #000a; }
 }
 ```
 
@@ -80,6 +77,16 @@ With both offset and blur combined, the perceptual sweet spot seems to be to hav
 The most common use of multiple shadows is to stack the same definition several times, to support a larger blur while still accumulating enough alpha to be effective. I'm assuming this for the sake of simplicity. Other more artistic patterns are possible, but rare. Lighthouse considers one interesting case, that of multiple thin (tiny offset, little or no blur) shadows stacked at slightly different offsets to approximate the effect of an outline stroke. This may have been common practice before blurs were widely supported, but these days a few clone shadows stacked with tiny blur and no offset can produce a similar but smoother effect, or for larger font sizes the new `-webkit-text-stroke` can support the desired text stroke directly.
 
 [![tight heavy shadow simulating stroked text](fake_stroke.webp)](https://mrec.github.io/webtoys/masked_contrast/#!d4ens)
+
+{% details(summary="A digression on stroked text, and becoming too fixated on implementation distinctions") %}
+One thought that kept recurring toward the end of writing this post is that "foreground versus background" can be a rather arbitrary distinction. Note 5 under [WCAG21's contrast definition](https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio) is a prime example:
+
+> When there is a border around the letter, the border can add contrast and would be used in calculating the contrast between the letter and its background. A narrow border around the letter would be used as the letter. A wide border around the letter that fills in the inner details of the letters acts as a halo and would be considered background.
+
+As we've come to expect there's no clear definition of "narrow" or "wide", but the more pernicious bit here is *"\[a] narrow border around the letter would be used as the letter"*. This is talking about `-webkit-text-stroke` or thin-shadow approximations thereof, and I think it's misleading because it misses how these enhancements work. They're effective because with a thinly-stroked outline, both the stroke colour *and* the fill colour can provide useful contrast. If I have white text over a mostly dark background, it doesn't suddenly become unreadable when I add a black stroke. That just offers a fallback route to contrast in case patches of the background are lighter. In this case I think the analysis should calculate all three contrasts in play -- stroke/background, fill/background, and stroke/fill -- and use the best of them.
+
+Another example, mentioned earlier, would be that text softened by a `filter: blur` would generally be considered to be all foreground, whereas a text shadow in the text colour is considered background, despite the two routes potentially rendering the exact same pixels.
+{% end %}
 
 {% details(summary="On the silliness of stacking Gaussian blurs") %}
 The ubiquity of multiple stacked copies as the solution to overly watery `text-shadow`s has become something of a pet peeve over the course of looking into this topic. As mentioned before, a Gaussian blur is *expensive*, and multiple identical blurs multiply that expense. It would seem to make far more sense to support a simple saturating alpha multiplier that could achieve the same result with only a single blur and a fraction of the cost.
@@ -170,7 +177,7 @@ final exposure-adjusted contrast: 11.37
 
 So: is this approach viable? Up to a point, yes. It's obviously extremely opinionated, and I don't claim for a moment that any particular formula or tuning constant is the best one. But the exposure/dilution framing seemed to help keep things manageable, and the output numbers do generally move in the right direction when twiddling shadow settings. For simple shadows and simple backgrounds it's fine.
 
-However, it's a very incomplete tool. It would need extension and testing for different fonts, sizes, weights, and multiple shadows that aren't just clones of each other. It doesn't (and can't) take complex backgrounds into account, and this isn't some weird edge case: one of the prime uses of `text-shadow` is to ensure contrast against arbitrary backgrounds. It would be utterly unfair to expect it to understand and predict the effect of something like an arbitrary [SVG filter](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/filter) applied via a [CSS filter](https://developer.mozilla.org/en-US/docs/Web/CSS/filter), a much more powerful and flexible tool for effects like this. For a more robust and general solution, we'd need to turn to image-based approaches.
+However, it's an incomplete tool. It would need extension and testing for different fonts, sizes, weights, and multiple shadows that aren't just clones of each other. It doesn't (and can't) take complex backgrounds into account, and this isn't some weird edge case: one of the prime uses of `text-shadow` is to ensure contrast against arbitrary backgrounds. It would be utterly unfair to expect it to understand and predict the effect of something like an arbitrary [SVG filter](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/filter) applied via a [CSS filter](https://developer.mozilla.org/en-US/docs/Web/CSS/filter), a much more powerful and flexible tool for effects like this. For a more robust and general solution, we'd need to turn to image-based approaches.
 
 ## Firefox and the image-based approach
 
@@ -221,24 +228,7 @@ As I understand it, the accessibility checker in Firefox wouldn't have these res
 
 [![heatmap for a decent shadow](heatmap_nearly.webp)](https://mrec.github.io/webtoys/masked_contrast/#!c4enr)
 
-```
-Whole box:
-    best contrast: 17.776
-    worst contrast: 1.020
-  WCAG 4.5 pixel pass rate: 49.08%
-  WCAG 3.0 pixel pass rate: 55.63%
-  mean luminance: 0.33
-  mean contrast: 6.78
-Outline mask:
-    best contrast: 17.663
-    worst contrast: 1.864
-  WCAG 4.5 pixel pass rate: 89.18%
-  WCAG 3.0 pixel pass rate: 97.21%
-  mean luminance: 0.06
-  mean contrast: 10.12
-```
-
-Narrowing the outline mask to single-pixel width gets us even closer (96.88% of pixels passing the 4.5:1, 99.94% the 3:1 test) but there's still the odd pesky outlier.
+Narrowing the outline mask to single-pixel width gets us even closer (96.88% of pixels passing the 4.5:1 test, 99.94% the 3:1 test) but there's still the odd pesky outlier.
 
 One natural response might be to define the pass criterion in terms of mean contrast rather than worst-case, but this creates as many problems as it solves. One is that the WCAG21 criteria levels are very much toward the low end of the 1..=21 scale established by the contrast formula; with a naive mean, having even a quarter of background pixels with perfect contrast will more than compensate for the other three-quarters having none whatsoever. (The same issue causes our analytical approach to be too forgiving of [shadows that blur their text](https://mrec.github.io/webtoys/masked_contrast/#!d4vxrn). Lighthouse passes that one too.) Another is that, perceptually, the distribution of contrast matters very much. Both the following background patterns offer a 50/50 mix of perfect and zero contrast, and hence similar mean contrasts, but one is very clearly worse than the other:
 
@@ -246,27 +236,35 @@ One natural response might be to define the pass criterion in terms of mean cont
 [![unshadowed text on coarse-grained checkerboard](checker_coarse.webp)](https://mrec.github.io/webtoys/masked_contrast/#!c0xnnc)
 
 {% details(summary="Another peculiar observation") %}
-Bizarrely, Firefox's accessibiility checker is perfectly happy with either black or white text against either checkerboard pattern. It does complain about white-on-white with no background image, or about slightly off-white text on checkerboards, so I've no idea what's going on there. Maybe it's significant that this is a `data:` URL rather than the usual kind.
+Bizarrely, Firefox's accessibiility checker is perfectly happy with either black or white text against either checkerboard pattern. It does complain about white-on-white with no background image, or about slightly off-white text on checkerboards, so I've no idea what's going on there. Maybe it's significant that this is a `data:` image URL rather than the usual kind?
 {% end %}
 
-Another idea might be to apply some sort of low-pass filter to the background, such as another blur, in order to forgive minor gaps in contrast. This would help the very contrived checkerboard example, but I don't think it would do much for our text shadows; it'd hurt the good areas more than it helped the bad ones. And more generally this is starting to feel like special pleading, when the main appeal of the image-based approach was its generality.
+Another idea might be to apply a low-pass filter to the background, in order to smooth out tiny gaps in contrast. This would help the very contrived checkerboard example, but I don't think it would do much for our text shadows; it'd hurt the good areas more than it helped the bad ones. And more generally this is starting to feel suspiciously like special pleading, when the main appeal of the image-based approach was its generality.
 
-I don't have a good sense of the right answer here. If pressed I'd probably go for requiring a high (but not 100%) pixel pass rate and maybe a lower but still meaningful bar for mean contrast on the rest, but it's not a satisfying way to wrap up a section.
+If pressed I'd probably go for requiring a high (but not 100%) pixel pass rate and a lower but still meaningful bar for mean contrast on the rest, but ultimately the image-based approach is no more a silver bullet than the analytic one. I do still think the generality of this approach has more headroom for improvement and carries less risk of getting tangled in special-case rulesets, but I don't think it's quite ready to take over in its present form.
+
+## ¿Por qué no los dos?
+
+So why not both? The analytic approach can apply heuristics because it understands the rules driving rendering, but it lacks knowledge of backgrounds. The image-based approach can have perfect knowledge of backgrounds but is too general to allow meaningful heuristics. Instead of viewing these as competitors, they could productively be combined. 
+
+Both Lighthouse and the PoC give up on analysis in the presence of a `background-image`, but there's absolutely no reason why they have to. There'd still be substantial value in just assuming the worst possible background (either white or black, depending on whether the text colour is above or below the luminance midpoint) and plugging that assumption into the analytic formula. If the shadow can provide good enough contrast even in that worst case, we can still record a pass.
+
+Firefox's image-based approach could do better by supplying the *actual* worst-case pixel instead of an assumed one, and the dilation mask enhancement could go one step further again by restricting that to the pixels we care about most. Note that in this case we probably *wouldn't* want to capture the shadow as part of the background as discussed under the "first hurdle" above, since this would effectively be double-counting its impact.
+
+This isn't a perfect solution by any means, but given that Firefox doesn't currently consider shadows at all, there's low-hanging fruit in abundance here. "Perfect" is the enemy of "good", and even "good" can be the enemy of "a bit better".
 
 ## TL;DR and conclusions
 
-- Contrast checking is a messy problem, largely because perceptual factors are messy
-- An analytic approach can be useful but has limits, especially when backgrounds get interesting
-- An image-based approach can be much more flexible, but coming up with a pass criterion that matches our intuition remains very much unsolved
+- Contrast checking is a messy problem, both because perceptual factors are messy and because the feature breadth of the web platform throws up so many potential scenarios.
+- An analytic approach can be useful but has limits, especially when backgrounds get interesting. It can still be used with a worst-case assumption, though, and Lighthouse in particular should almost certainly consider that.
+- An image-based approach can be much more flexible, but coming up with a pass criterion that matches our intuition is challenging, and hacking that function too much risks undermining the generality of the image-based approach.
+- Combining the two approaches, with a masked image-based background scan supplying an accurate worst-case for an analytic formula, looks to be the pragmatic way forward at this point.
 
-One thought that kept recurring toward the end of writing this post is that "foreground versus background" can be a rather arbitrary distinction. Note 5 under [WCAG32's contrast definition](https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio) is a prime example:
+I don't have any immediate plans to take this further, but there are definitely areas that could benefit from more work:
 
-> When there is a border around the letter, the border can add contrast and would be used in calculating the contrast between the letter and its background. A narrow border around the letter would be used as the letter. A wide border around the letter that fills in the inner details of the letters acts as a halo and would be considered background.
-
-As we've come to expect there's no clear definition of "narrow" or "wide", but the more pernicious bit here is *"\[a] narrow border around the letter would be used as the letter"*. This is talking about `-webkit-text-stroke` or thin-shadow approximations thereof, and I think it's misleading because it misses how these enhancements work. They're effective because with a thinly-stroked outline, both the stroke colour *and* the fill colour can provide useful contrast with the background. If I have white text over a mostly dark background, it doesn't suddenly become unreadable when I add a black stroke. That just offers a fallback route to contrast in case patches of the background are lighter. There are effectively two foreground colours here, and we should take the best contrast when assessing them.
-
-Another example, mentioned earlier, would be that text softened by a `filter: blur` would generally be considered to be all foreground, whereas a text shadow in the text colour is considered background, despite the two routes potentially rendering the exact same pixels.
-
-I don't have any immediate plans to take this further; it's been a bit of a slog. If I did, the PoC would definitely need to be built out to allow direct parameter tweaking, probably with DOM and canvas side-by-side rather than as alternate modes, and should be redesigned as a test suite that could evaluate solutions against a whole batch of scenarios with known preferred outcomes.
-
-Ah well, it's been an interesting trip.
+- Build out the PoC to allow direct parameter tweaking, probably with DOM and canvas side-by-side rather than as alternate modes. Add the ability to tweak more parameters, including `font-size`, `font-weight`, `font-family` and outline mask width. Redesign it as a test suite that could evaluate candidate formulae against a whole batch of scenarios with known preferred outcomes.
+- Generalize the analytic formula to cover font properties and heterogenous stacked shadows. 
+- Investigate ways to compensate for WCAG's contrast targets sitting well toward the low end of the scale, with all that implies for averaging.
+- Design a better analytical model for estimating alpha dilution from blur.
+- Look for better pass metrics for assessing image-based contrast results, while remaining wary of over-fitting to a specific outcome.
+- Investigate more effective and efficient alternatives to increase shadow exposure and reduce shadow dilution, such as an SVG filter applying a dilate followed by a narrow single-pass blur to soften the edges. This would be a two-edged sword since such a technique would pose an even more intractable problem for checkers, but we shouldn't becomes slaves to [Goodhart's law](https://en.wikipedia.org/wiki/Goodhart%27s_law). Ultimately, improving legibility for users is the goal, not passing accessibility audits!
