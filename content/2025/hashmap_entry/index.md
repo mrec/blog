@@ -54,7 +54,7 @@ We could pass a `&str` rather than a `&String` because the method signature is g
 This doesn't help us with `entry`, because of the key ownership requirement. What else could we try? Well, the obvious approach would be to do a `get_mut` first, and only resort to inserting when we don't find an existing entry. Unlike `entry` we're adding an extra lookup in the insertion case, but the whole point of the optimization we're attempting is that insertions will be the exception rather than the rule. So:
 
 ```rust,name=invalid
-// does not compile
+// doesn't compile
 fn get_mut_or_insert_default_probe1<'a>(map: &'a mut Map, k: &str) -> &'a mut V {
     match map.get_mut(k) {
         Some(v) => v,
@@ -66,7 +66,7 @@ fn get_mut_or_insert_default_probe1<'a>(map: &'a mut Map, k: &str) -> &'a mut V 
 This doesn't work. The borrow checker says we're trying to have two mutable references to the map at the same time. An `if let` version doesn't fare any better:
 
 ```rust,name=invalid
-// does not compile
+// doesn't compile
 fn get_mut_or_insert_default_probe2<'a>(map: &'a mut Map, k: &str) -> &'a mut V {
     if let Some(v) = map.get_mut(k) {
         return v;
