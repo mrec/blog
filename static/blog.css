@@ -12,7 +12,7 @@ blockquote::before, blockquote::after { content: none; }
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
 	--color-xtrasubtle-bg: #fcfcfc;
-	--color-details-summary-hover: #ffdeba;
+	--color-details-accent: #f2e7da;
 	--color-warn-fg: white; /* for code blocks */
 	--color-warn-bg: #d00; /* ditto */
 	--fade: 0.2s linear;
@@ -28,6 +28,11 @@ h1 {  font-size: 2em; margin-bottom: 0.25em; line-height: 1.3; }
 h2 {  font-size: 1.4em;  margin: 0.5em 0; }
 h2:not(h1 + h2) { border-top: 1px solid var(--color-subtle-line); margin-top: 1.5em; padding-top: 0.7em; }
 img { display: block; margin: 1em auto; }
+blockquote { font-style: italic; }
+
+/* Box content */
+blockquote, details { background-color: var(--color-xtrasubtle-bg); border: 1px solid var(--color-subtle-line); border-left-width: 8px; margin: 1em 0; }
+blockquote > *, details > * { margin: 0; padding: 0.6em 1em; }
 
 /* Hyperlinks */
 a { color: var(--color-link); text-decoration: none; }
@@ -53,7 +58,7 @@ header {
 header img#yakmask, header div#shavemask { display:block; position: absolute; left: 0; top: 0; min-width:128px; height: 100px; margin: 0; }
 header div#shavemask { cursor: image-set(url("/razor.webp") 1x, url("/razor-2x.webp") 2x), auto /* just amusing myself */; }
 header a#homelink { 
-	display: block; max-width: 160px; font-size: 22px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
+	display: block; max-width: 180px; font-size: 24px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
 	text-shadow: -2px 2px 7px black, -2px 2px 7px black, -2px 2px 7px black; 
 	text-transform: lowercase;
 }
@@ -68,14 +73,19 @@ footer nav {
 }
 
 /* Details shortcode (sub-yak) */
-details { background-color: var(--color-xtrasubtle-bg); border: 1px solid var(--color-subtle-line); border-left-width: 8px; font-size: small; line-height: 1.7; margin: 1em 0; }
-details > * { padding: 0.6em 1em; }
+details { font-size: small; line-height: 1.7; border-color: var(--color-details-accent); }
 details > summary { background-color: var(--color-subtle-bg); transition: background-color var(--fade); cursor: zoom-in; }
-details > summary:hover { background-color: var(--color-details-summary-hover); }
-details:open > summary { border-bottom: 1px solid var(--color-subtle-line); cursor: zoom-out; }
+details > summary:hover, details:open > summary { background-color: var(--color-details-accent); }
+details:open > summary { border-bottom: 1px solid var(--color-details-accent); cursor: zoom-out; }
 details > p { margin: 0; opacity: 0; }
 details:open > p { opacity: 1; transition: opacity var(--fade); }
-details > pre { margin: 0 1em; }
+details > pre, details > blockquote { margin: 0 1em; }
+details > blockquote::before { top: 0.25em; left: 0.4em; }
+
+/* Block quotes */
+blockquote { position: relative; }
+blockquote::before { content: "“"; color: var(--color-subtle-line); font-size: 4em; font-family:Georgia, serif; position: absolute; top: 0.1em; left: 0.15em; line-height: 1; }
+blockquote > p:first-child { text-indent: 2em; }
 
 /* Inline code */
 code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
@@ -90,7 +100,7 @@ pre[data-name="invalid"] span:first-of-type { /* note, need important! to overri
 }
 @media (any-hover: hover) { /* show warning as overlay, hide on mouseover */
 	pre[data-name="invalid"] { position: relative; }
-	pre[data-name="invalid"] span:first-of-type { 
+	pre[data-name="invalid"] span:first-of-type { /* first line of code must be a (brief!) comment */
 		margin: 0.5em; position: absolute; right: 0; top: 0; 
 		opacity: 1; transition: opacity var(--fade); 
 	}
