@@ -10,13 +10,13 @@ tags = ["web", "a11y"]
 comment = "versions: firefox 140.0.2, lighthouse 12.6.0"
 +++
 
-Current accessibility tools have significant gaps in how they handle [`text-shadow`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-shadow) when checking contrast. Some ignore shadows entirely, others handle them well in simple cases but give up when backgrounds get complex. This post explores the issues involved, outlines two broad approaches taken by current tools, and demonstrates potential improvements to both with a working proof of concept. There's no silver bullet -- it's an inherently messy problem -- but progress is possible.
+Current accessibility tools have significant gaps in how they handle [`text-shadow`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-shadow) when checking contrast. Some ignore shadows entirely, others handle them well in simple cases but give up when backgrounds get complex. This post explores the issues involved, outlines two broad approaches taken by current tools, and demonstrates potential improvements to both with a working proof-of-concept. There's no silver bullet -- it's an inherently messy problem -- but incremental progress is possible.
 
 It's amazing how effective yak-shaving can be for leading you to ~~absurdly niche~~ under-explored areas. At the time of writing, the top right of this blog's header showed the blog name in white letters overlaid on a background image including both landscape (dark-to-medium brightness) and sky (light). Since white-on-light isn't great for contrast, I'd added a text shadow effect providing a darker halo around the letters. I didn't think much more about it until I ran the accessibility checker built into Firefox's excellent developer tools, which delivered the damning verdict *"Does not meet WCAG standards for accessible text"*, with a best-case colour swatch strongly suggesting that the tool wasn't paying any attention at all to the shadow specifically intended to improve contrast. [Lighthouse](https://en.wikipedia.org/wiki/Lighthouse_\(software\)) (the corresponding tool in Chromium-based browsers) raised no such objection, but continued to raise no objection even without the shadow, which cast some doubts upon its rigour. Oh well, just one of those trifling disappointments which build character, and certainly nothing to warrant an obsessive overreac--
 
 !['Pepe Silvia' meme showing a crazed conspiracy loon in front of his theory wall](pepe_silvia.webp "Oh dear")
 
-We'll start with general background, then survey some of the perceptual considerations that make this area such a challenge to model. From there we'll get into the technical weeds, exploring the analytic and image-based approaches used by Lighthouse and Firefox respectively, and describing ideas implemented in the working proof-of-concept. These sections include code and formulae.
+We'll start with general background, then survey some of the perceptual considerations that make this area such a challenge to model. From there we'll get into the technical weeds, exploring the analytic and image-based approaches used by Lighthouse and Firefox respectively, and describing ideas implemented in the working proof-of-concept. These sections include some code, but it's not essential for understanding the core ideas.
 
 ## Background
 
@@ -87,7 +87,7 @@ One thought that kept recurring toward the end of writing this post is that "for
 
 As we've come to expect there's no clear definition of "narrow" or "wide", but the more pernicious bit here is *"\[a] narrow border around the letter would be used as the letter"*. This is talking about `-webkit-text-stroke` or thin-shadow approximations thereof, and I think it's misleading because it misses how these enhancements work. They're effective because with a thinly-stroked outline, both the stroke colour *and* the fill colour can provide useful contrast. If I have white text over a mostly dark background, it doesn't suddenly become unreadable when I add a black stroke. That just offers a fallback route to contrast in case patches of the background are lighter. In this case I think the analysis should calculate all three contrasts in play -- stroke/background, fill/background, and stroke/fill -- and use the best of them.
 
-Another example, mentioned earlier, would be that text softened by a `filter: blur` would generally be considered to be all foreground, whereas a text shadow in the text colour is considered background, despite the two routes potentially rendering the exact same pixels.
+Another example: text softened by a `filter: blur` would generally be considered to be all foreground, whereas a stacked text shadow in the text colour is considered background, despite the two routes potentially rendering the exact same final pixels.
 {% end %}
 
 {% details(summary="On the silliness of stacking Gaussian blurs") %}
@@ -96,9 +96,13 @@ The ubiquity of multiple stacked copies as the solution to overly watery `text-s
 This is something that a Sufficiently Smart Browser could theoretically optimize behind the scenes, but I don't know if any do. And the intent of an explicit multiplier would be far clearer in the CSS than reading a half-dozen shadow definitions and checking that they're all the same.
 {% end %}
 
+## Moving on to implementation
+
 So if those are some of the major considerations, how might we deal with them? There are two main paths: the analytic approach, which only looks at the styled (`getComputedStyle()`) DOM tree, and the image-based approach, which looks at the actual pixels getting rendered. Both Firefox and Lighthouse do the former in simple cases, with Lighthouse taking it further in the specific `text-shadow` case. To the best of my knowledge, only Firefox does image-based assessment; I'm not sure that Lighthouse's architecture would even allow it, since it's less tightly coupled with the browser.
 
-This post was written side by side with a basic proof-of-concept demo, which you can see [here](https://mrec.github.io/webtoys/masked_contrast/#!d4enrn). It's a self-contained single-file applet with no build pipeline, so View Source will show all the sausages being made should you feel so inclined. The various "Hello, world!" example images above and below link to this demo prepopulated with the parameters used to create them; if you want, you can run your browser's accessibility checker against them in the DOM draw method mode to see what they make of it. The image-based analysis in Canvas draw mode won't work in current Safari because it doesn't support `filter`, and I haven't really tested on mobile. The overlays (e.g. outline mask or heatmap) shown in some images aren't part of persistent page state and so can't be set on the links; they're triggered by holding down one of the labelled buttons.
+This post was written side by side with a basic proof-of-concept demo, which you can see [here](https://mrec.github.io/webtoys/masked_contrast/#!d4enrn). It's a self-contained single-file applet with no build pipeline, so View Source will show all the sausages being made should you feel so inclined. The various "Hello, world!" example images above and below link to this demo prepopulated with the parameters used to create them; you can tweak parameters to compare my (necessarily subjective) perceptual judgements with your own, or run your browser's accessibility checker against them in the DOM draw method mode to see what they make of it. 
+
+Caveat: the image-based analysis in Canvas draw mode won't work in current Safari because it doesn't support `filter`, and I haven't tested on mobile. The overlays (e.g. outline mask or heatmap) shown in some images aren't part of persistent page state and so can't be set by the links; they're triggered by holding down one of the labelled buttons.
 
 ## Lighthouse and the analytic approach
 
@@ -127,7 +131,7 @@ function opinionatedExposure(stemWidth, raw, ideal, excessExponent) {
 
 **Dilution** estimates how much a shadow's opacity is reduced by blur. This turned out to be a nasty, nasty problem. A simple closed-form equation based on radius penalizes large blurs too much; perceptually, we're mostly interested in the peak opacity at a glyph edge. Lower opacity further out might not help, but it doesn't actively hurt. A weighted 1D Gaussian approximation dramatically underestimates opacity, because the shadow blur we're doing is 2D, meaning far more input pixels contribute to the output, in glyph-area-dependent ways. Looking at 2D Gaussians led me to things like Abramowitz and Stegun's fast erf approximation, which is so far outside my mathematically-challenged comfort zone that I couldn't see my mathematically-challenged sofa with a telescope. 
 
-At this point I stepped back, took some empirical measurements of edge shadow opacity at various blurs, and got ChatGPT to fit them to a curve for me. I'm not proud, but I am tired. (Lighthouse does the same kind of thing, which makes me feel a bit better.)
+At this point I stepped back, took some empirical measurements of edge shadow opacity at various blurs, and fitted them to a curve; we're never going to do better than an approximation here, and ultimately pragmatism won out. (Lighthouse does the same kind of thing, which makes me feel a bit better.)
 
 ```js
 function fittedAlpha(blur) {
@@ -135,10 +139,17 @@ function fittedAlpha(blur) {
 }
 ```
 
-With both exposure and dilution in hand, we can put everything together. This is cut down from the [webtoy source](https://github.com/mrec/webtoys/blob/main/masked_contrast/index.html#L267), with verbose commenting stripped out:
+With both exposure and dilution in hand, we can start to put everything together:
+
+- Estimate exposure contributions from offset and blur using the opinionated helper shown earlier, blend them in a way that reflects blur's greater perceptual impact and adds a small nod to the observation that a combination of blur and offset can be more than the sum of its parts.
+- Estimate the luminance of the shadow based on dilution and stacking, and calculate how much contrast that shadow could ideally provide.
+- Use our combined exposure to weight the relative impacts of ideal text/shadow and text/background contrasts.
+
+This is cut down from the [webtoy source](https://github.com/mrec/webtoys/blob/main/masked_contrast/index.html#L267); if you want to dig into the details, the original has extensive comments for each line.
 
 ```js
-// bgLum & fgLum are luminance values in the range 0..=1, stack is the number of shadow clones
+// bgLum, fgLum, shadowLum are luminance values in the range 0..=1
+// stack is the number of shadow clones
 // luminance and contrast functions follow the https://www.w3.org/TR/WCAG21/ formulae
 const baseContrast = contrast(bgLum, fgLum);
 const offset = Math.max(Math.abs(x), Math.abs(y));
@@ -155,7 +166,7 @@ const idealContrast = contrast(fgLum, shadowedBgLum);
 const finalContrast = idealContrast * combinedExposure + baseContrast * (1 - combinedExposure);
 ```
 
-Which in turn produces an analytic report with concrete numbers like [this](https://mrec.github.io/webtoys/masked_contrast/#!d2etr):
+From that code we get an analytic report with concrete numbers like [this](https://mrec.github.io/webtoys/masked_contrast/#!d2etr):
 
 ```
 background colour: rgb(221, 238, 255)
@@ -185,7 +196,9 @@ However, it's an incomplete tool. It would need extension and testing for differ
 
 Unlike Lighthouse, Firefox's accessibility checker does cope with text over a background image. It hides the text, renders the layout box the text would fill, grabs the background pixels in that box, finds the lightest and darkest of those pixels and assesses contrast with whichever of those is worse for the text colour. This is ambitious, flexible and praiseworthy. Unfortunately it doesn't work for `text-shadow`. To fix that, three hurdles would need to be cleared.
 
-**First hurdle:** Firefox doesn't *see* the shadow. It hides the text by (I think) temporarily setting `visibility: hidden` on it, making it invisible without disturbing layout. However, when you do this, the text shadow doesn't get drawn either, and we really wanted that to be part of the background capture. This one looks relatively easy to resolve. If instead of `visibility: hidden` we give the text a colour with an alpha component of zero, it'll still be invisible, but the shadow does get drawn since it's drawn using the shadow colour, not the text colour. You can confirm this via the DOM inspector.
+**First hurdle:** Firefox doesn't *see* the shadow. It hides the text by (I think) temporarily setting `visibility: hidden` on it, making it invisible without disturbing layout. However, when you do this, the text shadow doesn't get drawn either, and we really wanted that to be part of the background capture. 
+
+This one looks relatively easy to resolve. If instead of `visibility: hidden` we give the text a colour with an alpha component of zero, it'll still be invisible, but the shadow does get drawn since it's drawn using the shadow colour, not the text colour. You can confirm this via the DOM inspector.
 
 {% details(summary="What about shadows with no background image?") %}
 I'd have thought that in this case Firefox would fall back to an analytic approach, especially since coming across various references to it using at least parts of `axe-core`, the accessibility engine behind Lighthouse. But either it doesn't, or that analysis doesn't look at `text-shadow` either. With white foreground/background, black shadow and no `background-image`, Firefox only reports a white background.
@@ -211,6 +224,8 @@ If what matters for legibility is the fairly narrow band of pixels around each g
 Since we're looking for well-defined edges, it feels as if something like a [Sobel filter](https://en.wikipedia.org/wiki/Sobel_operator) ought to be useful. This is eminently doable in SVG, but in practice doesn't really offer anything over the dilate-mask approach. After all, we already know where the edges are, so finding them again from first principles is a bit redundant.
 
 One situation where edge detection might be useful is when considering [blurry text](https://mrec.github.io/webtoys/masked_contrast/#!d4vnrn), either from an explicit CSS `filter: blur` or from a blurred shadow colour matching the text colour. Rather than generating the outline mask outside the glyph edge, we might centre it over the edge and look for strong Sobel pixels within that mask. This is a bit of a digression, though, and would have its own issues. It wouldn't be any more forgiving of one-sided contrast from an offset shadow than the dilation approach, and it would be vulnerable to false edges from a noisy background (e.g. vertical pinstripes) that happened to coincide with glyph edges.
+
+There's still something very tempting here. It's the only technique I can think of which sidesteps the arbitary foreground/background dichotomy mentioned in an earlier subyak.
 {% end %}
 
 Now when we scan our background pixels, we can check whether the corresponding pixel in the mask is set, and skip pixels that aren't covered. The difference in coverage between "all pixels in the layout box" and "only pixels covered by the outline mask" (2px wide in this example) is dramatic.
@@ -243,11 +258,11 @@ Bizarrely, Firefox's accessibiility checker is perfectly happy with either black
 
 Another idea might be to apply a low-pass filter to the background, in order to smooth out tiny gaps in contrast. This would help the very contrived checkerboard example, but I don't think it would do much for our text shadows; it'd hurt the good areas more than it helped the bad ones. And more generally this is starting to feel suspiciously like special pleading, when the main appeal of the image-based approach was its generality.
 
-If pressed I'd probably go for requiring a high (but not 100%) pixel pass rate and a lower but still meaningful bar for mean contrast on the rest, but ultimately the image-based approach is no more a silver bullet than the analytic one. I do still think the generality of this approach has more headroom for improvement and carries less risk of getting tangled in special-case rulesets, but I don't think it's quite ready to take over in its present form.
+If pressed I'd probably go for requiring a high (but not 100%) pixel pass rate and a lower but still meaningful bar for mean contrast on the rest, but ultimately the image-based approach is no more a silver bullet than the analytic one. I do still think the generality of this approach has more headroom for improvement and carries less risk of getting tangled in special-case rulesets, but I don't think it's ready to take over in its present form.
 
 ## ¿Por qué no los dos?
 
-So why not both? The analytic approach can apply heuristics because it understands the rules driving rendering, but it lacks knowledge of backgrounds. The image-based approach can have perfect knowledge of backgrounds but is too general to allow meaningful heuristics. Instead of viewing these as competitors, they could productively be combined. 
+So why not both? The analytic approach can apply heuristics because it understands the rules driving rendering, but it lacks knowledge of backgrounds. The image-based approach can have perfect knowledge of backgrounds but is too general to allow meaningful heuristics. Instead of viewing these as competitors, they could usefully be combined. 
 
 Both Lighthouse and the PoC give up on analysis in the presence of a `background-image`, but there's absolutely no reason why they have to. There'd still be substantial value in just assuming the worst possible background (either white or black, depending on whether the text colour is above or below the luminance midpoint) and plugging that assumption into the analytic formula. If the shadow can provide good enough contrast even in that worst case, we can still record a pass.
 
@@ -259,7 +274,7 @@ This isn't a perfect solution by any means, but given that Firefox doesn't curre
 
 - Contrast checking is a messy problem, both because perceptual factors are messy and because the feature breadth of the web platform throws up so many potential scenarios.
 - An analytic approach can be useful but has limits, especially when backgrounds get interesting. It can still be used with a worst-case assumption, though, and Lighthouse in particular should almost certainly consider that.
-- An image-based approach can be much more flexible, but coming up with a pass criterion that matches our intuition is challenging, and hacking that function too much risks undermining the generality of the image-based approach.
+- An image-based approach can be much more robust, but coming up with a pass criterion that matches our intuition is challenging, and hacking that function too much risks undermining the generality that was the main benefit.
 - Combining the two approaches, with a masked image-based background scan supplying an accurate worst-case for an analytic formula, looks to be the pragmatic way forward at this point.
 
 I don't have any immediate plans to take this further, but there are definitely areas that could benefit from more work:
@@ -267,6 +282,6 @@ I don't have any immediate plans to take this further, but there are definitely 
 - Build out the PoC to allow direct parameter tweaking, probably with DOM and canvas side-by-side rather than as alternate modes. Add the ability to tweak more parameters, including `font-size`, `font-weight`, `font-family` and outline mask width. Redesign it as a test suite that could evaluate candidate formulae against a whole batch of scenarios with known preferred outcomes.
 - Generalize the analytic formula to cover font properties and heterogenous stacked shadows. 
 - Investigate ways to compensate for WCAG's contrast targets sitting well toward the low end of the scale, with all that implies for averaging.
-- Design a better analytical model for estimating alpha dilution from blur.
+- Design a better analytical model for estimating alpha dilution from blur, or at least a curve fitted to a more extensive sample set.
 - Look for better pass metrics for assessing image-based contrast results, while remaining wary of over-fitting to a specific outcome.
-- Investigate more effective and efficient alternatives to increase shadow exposure and reduce shadow dilution, such as an SVG filter applying a dilate followed by a narrow single-pass blur to soften the edges. This would be a two-edged sword since such a technique would pose an even more intractable problem for checkers, but we shouldn't becomes slaves to [Goodhart's law](https://en.wikipedia.org/wiki/Goodhart%27s_law). Ultimately, the goal is to improve legibility for users, not to pass accessibility audits!
+- Investigate more effective and efficient alternatives to increase shadow exposure and reduce shadow dilution, such as an SVG filter applying a dilate followed by a narrow single-pass blur to soften the edges. This would be a two-edged sword since such techniques would pose an even more intractable problem for checkers, but we shouldn't becomes slaves to [Goodhart's law](https://en.wikipedia.org/wiki/Goodhart%27s_law). Ultimately, the goal is to improve legibility for users, not to pass accessibility audits!
