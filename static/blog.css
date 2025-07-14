@@ -12,7 +12,7 @@ blockquote::before, blockquote::after { content: none; }
 	--color-subtle-line: #ccc;
 	--color-subtle-text: #767676; /* >4.5:1 contrast */
 	--color-xtrasubtle-bg: #fcfcfc;
-	--color-details-accent: #f2e7da;
+	--color-details-accent: #ced9e5;
 	--color-warn-fg: white; /* for code blocks */
 	--color-warn-bg: #d00; /* ditto */
 	--fade: 0.2s linear;
