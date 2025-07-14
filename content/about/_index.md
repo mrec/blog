@@ -4,7 +4,7 @@ template = "about.html"
 description = "General information about the blog including subject, format, credits, contact info and license"
 +++
 
-This blog is a place to put notes to self and general musings. Partly as a record of things I've found while digging into a topic, partly as a form of [rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so aim to be informative rather than groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/) just because I'm in the process of learning it, but who knows what else may creep in later.
+This blog is a place to put notes to self and general musings. Partly as a record of things I've found while digging into a topic, partly as a form of [rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) to clarify my thoughts, and partly as a way to exorcise them from my head when, as is generally the case, they were a distraction from whatever I was supposed to be doing. They'll generally be byproducts of the learning process, and so aim to be informative rather than groundbreaking. Initially the subject matter will be mostly [Rust](https://rust-lang.org/) just because I'm in the process of learning it, but other things may creep in later, and they won't all necessarily be technical.
 
 ## "Never Knowingly Undershaved"?
 
@@ -12,7 +12,7 @@ For anyone wondering about the name, it's a reference to [yak shaving](https://s
 
 ## Format
 
-The format is going to be fairly minimalistic. I love the concept and values of the [quiet web](https://briankoberlein.com/tech/quiet-web/), and my ideal design for a webpage looks suspiciously like Reader View but with slightly more yaks. There will be absolutely no ads, trackers, analytics, cookies, or JavaScript. Anything that's not subject matter should stay out of the way as far as possible.
+The format is going to be fairly minimalistic. I love the concept and values of the [quiet web](https://briankoberlein.com/tech/quiet-web/), and my ideal design for a webpage looks suspiciously like Reader View but with slightly more yaks. There will be absolutely no ads, trackers, analytics or cookies. Anything that's not subject matter should stay out of the way as far as possible. There's currently no JavaScript and I don't see that changing in the near or medium term, but I'm ambivalent about making this a hard-and-fast forever rule. For some topics interactivity makes for a [better presentation](https://ciechanow.ski/mechanical-watch/) of the subject matter, and sometimes it might make more sense to do that inline rather than in a linked demo.
 
 I do like HTML's newish `<details>` element as a way to capture optional digressions without breaking the flow of the main topic. I think of these as sub-yaks, fractally budding from the Great Universal Mandelyak. I still have some lingering concerns about feed reader support, but I've started to see other blogs use them and so am taking the plunge.
 
