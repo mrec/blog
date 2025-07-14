@@ -38,7 +38,8 @@
   <body>
     <header>
       {% if yakmask -%}
-        <img id="yakmask" alt="" src="/doodleyaks/{{ yakmask }}.webp">
+        {%- set yakmaskpath = "doodleyaks/" ~ yakmask ~ ".webp" -%}
+        <img id="yakmask" alt="" src="{{ get_url(path=yakmaskpath) }}">
       {%- endif %}
       <div id="shavemask"></div>
       <a id="homelink" href="{{ get_url(path='/') }}" title="Go to the blog's home page">{{ config.title }}</a>
