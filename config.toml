@@ -20,7 +20,7 @@ insert_anchor_links = "heading"
 smart_punctuation = true
 
 [extra]
-tag_doodles = [] # ["performance"]
+tag_doodles = [] # ["perf"]
 
 [extra.tag_descriptions]
 a11y = "making UIs more accessible"
