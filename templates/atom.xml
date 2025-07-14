@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
     <title>
-    {%- if term %}{{ term.name }} - {{ section.title }}
-    {%- elif section.title %}{{ section.title }}
+    {%- if term %}{{ term.name }} - {{ config.title }}
     {%- else %}{{ config.title }}
     {%- endif -%}
     </title>
