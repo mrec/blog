@@ -2,6 +2,7 @@
 title = "`text-shadow` and accessibility checking"
 description = "How current accessibility checking tools deal with `text-shadow` when assessing contrast, with concrete and demonstrated ideas for improvement"
 date = 2025-07-03
+updated = 2025-07-14
 
 [taxonomies]
 tags = ["web", "a11y"]
