@@ -20,7 +20,7 @@ insert_anchor_links = "heading"
 smart_punctuation = true
 
 [extra]
-tag_doodles = [] # ["perf"]
+tag_doodles = ["a11y", "meta", "perf", "rust", "web"]
 
 [extra.tag_descriptions]
 a11y = "making UIs more accessible"
