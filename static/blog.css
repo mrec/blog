@@ -98,7 +98,7 @@ pre[data-name="invalid"] span:first-of-type { /* note, need important! to overri
 	background-color: var(--color-warn-bg); font-family: sans-serif;  line-height: 1; display: block;
 	border: 2px solid var(--color-warn-fg); padding: 0.3em 0.5em;
 }
-@media (any-hover: hover) { /* show warning as overlay, hide on mouseover */
+@media (hover: hover) { /* show warning as overlay, hide on mouseover */
 	pre[data-name="invalid"] { position: relative; }
 	pre[data-name="invalid"] span:first-of-type { /* first line of code must be a (brief!) comment */
 		margin: 0.5em; position: absolute; right: 0; top: 0; 
