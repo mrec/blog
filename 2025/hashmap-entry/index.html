@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Mike Capp">
+    <meta name="description" content="A look at performance issues with unnecessary owned key construction in Rust’s HashMap::entry API">
+    <title>The problem with Rust’s HashMap::entry | Never Knowingly Undershaved</title>
+    <link rel="stylesheet" href="https://mrec.github.io/blog/blog.css">
+    <link rel="icon" href="https://mrec.github.io/blog/favicon.svg" sizes="any" type="image/svg+xml">
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="https://mrec.github.io/blog/atom.xml">
+  </head>
+  <body>
+    <header>
+      
+      <div id="shavemask"></div>
+      <a id="homelink" href="https://mrec.github.io/blog" title="Go to the blog's home page">Never Knowingly Undershaved</a>
+    </header>
+    <main>
+      <h1>The problem with Rust’s <code>HashMap::entry</code></h1>
+      
+  <p class="frontmatter subtle">
+    2025-06-16
+     | tags:
+      
+        <a href="https://mrec.github.io/blog/tags/rust">rust</a>,
+        <a href="https://mrec.github.io/blog/tags/perf">perf</a>
+    
+     | versions: rust 1.86.0, hashbrown 0.15.4
+  </p>
+  <p>This is about a seemingly-minor performance detail that’s niggling at me as a Rust beginner working through the Book. It can have a significant impact in some usage scenarios, it’s a well-known issue, and a well-known workaround exists. It’s just not available in the standard library for stable Rust, and everybody seems weirdly fine with that.</p>
+<p>I didn’t really start digging until I was a bit further along in the Book, so the post mentions some concepts (lifetimes, traits) that you might not have encountered yet if you got a bee in your bonnet at the same point I did.</p>
+<h2 id="background"><a class="zola-anchor" href="#background" aria-label="Anchor link for: background">Background</a></h2>
+<p>The third exercise in section 8.3 involves collecting employee names grouped by department name, i.e. a <code>HashMap&lt;String, Vec&lt;String&gt;&gt;</code>. The text points to the <code>entry</code> method as the idiomatic way to add or update an entry which might not exist yet, so given a <code>&amp;str</code> key it’s straightforward. (I’m aliasing some types to reduce visual clutter.)</p>
+<pre data-lang="rust" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#aa2063;">type </span><span>V </span><span style="color:#0000ff;">= </span><span>Vec&lt;String&gt;;
+</span><span style="color:#aa2063;">type </span><span>Map </span><span style="color:#0000ff;">= </span><span>HashMap&lt;String, V&gt;;
+</span><span>
+</span><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_naive</span><span>&lt;</span><span style="color:#aa2063;">&#39;a</span><span>&gt;(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> Map, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    map.entry(k.to_owned()).or_default()
+</span><span>}
+</span></code></pre>
+<details>
+<summary>Is <code>String</code> really the right choice?</summary>
+<p>When I did this exercise I was firmly of the opinion that neither department (key) nor employee (value) names should be mutable, and went with <code>Box&lt;str&gt;</code> instead. This has several advantages: it’s guaranteed immutable even if owned by a mutable collection, it’s guaranteed to be right-sized whereas <code>String</code> may have excess capacity for amortized growth, and its memory footprint is smaller by a <code>usize</code> since it doesn’t need to carry a capacity separate from length.</p>
+<p>I’m more relaxed about <code>String</code> now; I still think <code>Box&lt;str&gt;</code> is better, I’m just less interested in swimming against the tide. <code>String</code> is less visually noisy, it’s far more common as a basic vocabulary type, it won’t over-allocate capacity unless you actually start futzing with it, and for obvious reasons <code>std</code>’s <code>HashMap</code> won’t give you mutable references to its keys anyway. I’d like any solution I come up with to support <code>Box&lt;str&gt;</code> as well, though. (And I do wish <code>Box&lt;str&gt;</code> had been named <code>String</code> and <code>String</code> had been named <code>StringBuilder</code>, grumble grumble.)</p>
+</details>
+<details>
+<summary>Why do we need to specify the lifetime?</summary>
+<p>I was a bit surprised that I needed an explicit <code>'a</code> lifetime annotation here; I couldn’t see any way a <code>&amp;mut Vec&lt;String&gt;</code> return value could possibly be aliasing a <code>&amp;str</code> parameter, so where’s the ambiguity? But Rust’s lifetime elision rules don’t look at types. If there are two reference parameters and neither of them is <code>self</code>, you have to annotate manually. This isn’t a criticism! Rust faces ongoing struggles with compilation times, a Sufficiently Smart Borrowck is not necessarily a Sufficiently Fast or Stable Borrowck, and adding the lifetime isn’t too onerous.</p>
+</details>
+<p>This returns a possibly-new <code>&amp;mut V</code> to which you can add a name. But <code>entry</code>’s key parameter has to be a <code>String</code>, rather than the <code>&amp;str</code> you’re holding as you parse input, and  <code>to_owned()</code> is allocating memory on the heap even in the case where the entry already exists and the new key isn’t needed. This is jarring given Rust’s efficiency claims, especially so early on. In the context of this exercise the overhead is irrelevant since we’re being driven by interactive user input, but in a hot loop we’d want to avoid heap allocation if we can.</p>
+<p>Does this post represent an absurd level of detail for such a niche issue? Possibly. Is that going to be a running theme for this blog? Almost certainly.</p>
+<p><a class="external" rel="nofollow noreferrer" href="https://xkcd.com/386"><img src="https://mrec.github.io/blog/2025/hashmap-entry/xkcd386_duty_calls_modified.webp" alt="An XKCD cartoon modified to poke fun at premature optimization" title="“Oh no, the official XKCD script font TTF is broken! Better raise a bug.”“Wait, weren&#39;t you working through the Rust Book?”“WHAT DOES IT LOOK LIKE I&#39;M DOING?”" /></a></p>
+<h2 id="first-attempts"><a class="zola-anchor" href="#first-attempts" aria-label="Anchor link for: first-attempts">First attempts</a></h2>
+<p>We didn’t have this problem with <code>get</code>. Why could we pass a <code>&amp;str</code> to that but not to <code>entry</code>?</p>
+<p>We could pass a reference because there’s no chance that a <code>get</code> call will add a new entry. A <code>HashMap</code> owns its keys, so it needs owned key values when doing that.</p>
+<p>We could pass a <code>&amp;str</code> rather than a <code>&amp;String</code> because the method signature is going out of its way to support us, typing its key parameter as a generic <code>&amp;Q</code>, where the map’s key type <code>K</code> is required to implement <code>Borrow&lt;Q&gt;</code>. By implementing <code>Borrow&lt;str&gt;</code>, the <code>String</code> type declares that its data payload is basically just a <code>str</code> and can be borrowed as a <code>&amp;str</code>, and in particular it promises that it’ll hash the same and test for equality the same as a <code>str</code> would. Perfect! In fact, the <a class="external" rel="nofollow noreferrer" href="https://doc.rust-lang.org/std/borrow/trait.Borrow.html">trait docs</a> for <code>Borrow</code> use <code>HashMap::get</code> as the motivating example.</p>
+<p>This doesn’t help us with <code>entry</code>, because of the key ownership requirement. What else could we try? Well, the obvious approach would be to do a <code>get_mut</code> first, and only resort to inserting when we don’t find an existing entry. Unlike <code>entry</code> we’re adding an extra lookup in the insertion case, but the whole point of the optimization we’re attempting is that insertions will be the exception rather than the rule. So:</p>
+<pre data-lang="rust" data-name="invalid" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust" data-name="invalid"><span style="font-style:italic;color:#3c802c;">// doesn&#39;t compile
+</span><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_probe1</span><span>&lt;</span><span style="color:#aa2063;">&#39;a</span><span>&gt;(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> Map, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    </span><span style="color:#9062a1;">match</span><span> map.get_mut(k) {
+</span><span>        Some(v) </span><span style="color:#0000ff;">=&gt;</span><span> v,
+</span><span>        None </span><span style="color:#0000ff;">=&gt;</span><span> map.entry(k.to_owned()).or_default()
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>This doesn’t work. The borrow checker says we’re trying to have two mutable references to the map at the same time. An <code>if let</code> version doesn’t fare any better:</p>
+<pre data-lang="rust" data-name="invalid" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust" data-name="invalid"><span style="font-style:italic;color:#3c802c;">// doesn&#39;t compile
+</span><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_probe2</span><span>&lt;</span><span style="color:#aa2063;">&#39;a</span><span>&gt;(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> Map, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    </span><span style="color:#9062a1;">if </span><span style="color:#aa2063;">let </span><span>Some(v) </span><span style="color:#0000ff;">=</span><span> map.get_mut(k) {
+</span><span>        </span><span style="color:#9062a1;">return</span><span> v;
+</span><span>    }
+</span><span>    map.entry(k.to_owned()).or_default()
+</span><span>}
+</span></code></pre>
+<p>In both cases, Rust complains on the first return that <em>“returning this value requires that <code>*map</code> is borrowed for <code>'a</code>”</em>. Since it’s returning a mutable reference to something in our map (indicated by the lifetime), our map reference is considered to have escaped and be roaming around at large now, and we aren’t allowed to use it again here. It’s frustrating because in both formulations, almost by definition, we’re only trying to use it again in the branch where we <em>didn’t</em> return it the first time! The borrow checker can’t currently track this kind of conditional borrowing; if it sees that we <em>might</em> return a reference, it conservatively assumes we always do.</p>
+<p>It turns out that this is a well-known issue. This exact situation became infamous as “Problem Case #3” (which has a nice SCP ring to it) in the epic “non-lexical lifetimes” initiative running from 2017 to 2022. It was deferred from that as being too knotty, but work is ongoing to address it as part of the followup “Polonius” initiative. (I sometimes suspect that &gt;80% of Rust engineer time is spent coming up with clever project names.) A 2024 <a class="external" rel="nofollow noreferrer" href="https://smallcultfollowing.com/babysteps/blog/2024/06/02/the-borrow-checker-within/">blog post</a> by Niko Matsakis reassures us that this work is still progressing.</p>
+<p>Note though that even when this work lands, it won’t offer a perfect solution; there’d still be that pesky extra lookup on the insertion path. And it’s not something we can do anything about for now in any case, so it’s time to look elsewhere.</p>
+<h2 id="settling-for-mediocrity"><a class="zola-anchor" href="#settling-for-mediocrity" aria-label="Anchor link for: settling-for-mediocrity">Settling for mediocrity</a></h2>
+<p>If we abandon our doomed Utopian dream of avoiding a double lookup in the common case, we can always do this:</p>
+<pre data-lang="rust" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_doublelookup</span><span>&lt;</span><span style="color:#aa2063;">&#39;a</span><span>&gt;(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> Map, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    </span><span style="color:#9062a1;">if</span><span> map.contains_key(k) {
+</span><span>        map.get_mut(k).unwrap()
+</span><span>    } </span><span style="color:#9062a1;">else </span><span>{
+</span><span>        map.entry(k.to_owned()).or_default()
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>This does have the minor virtue of actually compiling, but otherwise it’s hard to get enthusiastic about it. It’ll come down to a question of whether a usually-redundant allocation is worse than an always-redundant extra lookup. My expectation is yes (don’t worry, we’ll check later) but even at best it would depend heavily on the scenario. It’d be nice to have something a bit more clear-cut.</p>
+<h2 id="going-outside-std"><a class="zola-anchor" href="#going-outside-std" aria-label="Anchor link for: going-outside-std">Going outside <code>std</code></a></h2>
+<p>At this point we’ve gone as far as we can go with the stable <code>std::collections::HashMap</code>. If we want to continue we’ll need to go outside, and discussions around this problem always point to the <a class="external" rel="nofollow noreferrer" href="https://crates.io/crates/hashbrown"><code>hashbrown</code> crate</a>. This is what <code>std</code>’s hashmap is built on, and it exposes some additional low-level <code>raw_entry</code> APIs which are tailor-made for us: the <a class="external" rel="nofollow noreferrer" href="https://docs.rs/hashbrown/0.15.2/hashbrown/hash_map/struct.HashMap.html#method.raw_entry_mut">docs</a> explicitly mention <em>“Deferring the creation of an owned key until it is known to be required”</em> as a use case. (Although they call that an <em>“exotic situation”</em> which struck me as odd; string-keyed maps are hardly exotic. To quote Ben Elton, that’s like calling a loaf of bread “Enigma”.)</p>
+<p>Somewhat ominously, <code>hashbrown</code>’s README describes the <code>RawEntry</code> API as “deprecated”, but as far as I can tell this doesn’t mean anything substantive. The methods aren’t marked as <code>#[deprecated]</code>, and the feature is still included by default. I suspect it’s just a guardrail since stabilization failed, a way to signal that “you shouldn’t assume this will ever be in <code>std</code>”.</p>
+<p>Anyway, armed with this, we can do much better:</p>
+<pre data-lang="rust" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#aa2063;">type </span><span>BrownMap </span><span style="color:#0000ff;">= </span><span>hashbrown::HashMap&lt;String, V&gt;;
+</span><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_hashbrown_raw</span><span>&lt;</span><span style="color:#aa2063;">&#39;a</span><span>&gt;(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> BrownMap, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    map.raw_entry_mut()
+</span><span>        .from_key(k)
+</span><span>        .or_insert_with(|| (k.to_owned(), V::default()))
+</span><span>        .1 </span><span style="font-style:italic;color:#3c802c;">// only want the value, not the (mutable, yikes!) key
+</span><span>}
+</span></code></pre>
+<p>Pretty good! No redundant lookups, no redundant allocations. There must be a catch.</p>
+<p>Obviously, it’s an extra dependency that mostly just repeats what <code>std</code> already gives you. Even though <code>std</code> uses <code>hashbrown</code> itself, that doesn’t make the dependency “free”. <code>std</code> doesn’t use Cargo to manage its own dependencies, and you aren’t getting <code>std</code> via Cargo anyway, so Cargo doesn’t get to apply its deduplication magic, so you’ll have two copies of the <code>hashbrown</code> code in your binary. It’s not a huge dep, but still.</p>
+<p>It also doesn’t help us with the <code>std</code> maps which the vast majority of Rust code will be using. And there isn’t any way to get at <code>std</code>’s more fully-featured underlying map; the use of <code>hashbrown</code> is an implementation detail, and jealously guarded as such. The <code>raw_entry</code> API <em>is</em> currently exposed in nightly Rust’s <code>std</code> behind a feature flag, but a <a class="external" rel="nofollow noreferrer" href="https://github.com/rust-lang/rust/issues/56167">move to stabilize</a> was “closed as not planned” in August 2024 so doesn’t look likely to go anywhere soon.</p>
+<details>
+<summary>But if <code>std</code>’s map is just a shrinkwrapper, couldn’t we <code>transmute</code> a reference and…?</summary>
+<p><img src="https://mrec.github.io/blog/2025/hashmap-entry/horrified.webp" alt="cat recoiling in horror" /></p>
+<p>No, don’t do that. Yes, it’s a shrinkwrapper, in the sense that <code>std::collections::HashMap</code> is literally a struct with one member <code>base</code> of type <code>hashbrown::HashMap</code>. But you can’t transmute it to the type of <code>base</code>, because you can’t <em>see</em> the type of <code>base</code>. You could transmute it to the type of <em>your</em> <code>hashbrown::HashMap</code>, but <code>std</code> may not be compiling <code>hashbrown</code> with the same flags as you, and everything is going to explode horribly anyway when the versions get out of step. Or, heaven forbid, <code>std</code> switches to a different implementation entirely.</p>
+</details>
+<p>It’s mentioned less, probably because it’s newer, but <code>hashbrown</code> also offers a much more ergonomic alternative: the <a class="external" rel="nofollow noreferrer" href="https://docs.rs/hashbrown/0.15.4/hashbrown/struct.HashMap.html#method.entry_ref"><code>entry_ref</code></a> API.</p>
+<pre data-lang="rust" style="background-color:#ffffff;color:#000000;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#aa2063;">fn </span><span style="color:#7f56c7;">get_mut_or_insert_default_hashbrown_nice</span><span>(map: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> BrownMap, k: </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">str</span><span>) -&gt; </span><span style="color:#0000ff;">&amp;</span><span style="color:#aa2063;">&#39;a mut</span><span> V {
+</span><span>    map.entry_ref(k).or_default()
+</span><span>}
+</span></code></pre>
+<p>The chained <code>or_default()</code> method here has an <code>Into&lt;K&gt;</code> bound on <code>&amp;Q</code> (the key reference type) which is how it produces an owned key when needed.</p>
+<p>I can’t find any discussion of stabilizing <code>entry_ref</code>, and that isn’t exposed in nightly <code>std</code>. It isn’t even in the <code>hashbrown</code> <a class="external" rel="nofollow noreferrer" href="https://rust-lang.github.io/hashbrown/hashbrown/index.html">docs</a> hosted under rust-lang.github.io - they’re for an ancient version 0.11.2, way behind the 0.15.4 on crates.io. Is <code>std</code> just vendoring in an old snapshot and never updating?</p>
+<h2 id="does-any-of-this-actually-make-a-difference"><a class="zola-anchor" href="#does-any-of-this-actually-make-a-difference" aria-label="Anchor link for: does-any-of-this-actually-make-a-difference">Does any of this actually make a difference?</a></h2>
+<p>Bah, do not pester me with such trifling details.</p>
+<p>Well then if you’re going to <em>push</em> me… okay, time for some rough benchmarks. These are very crude – I don’t want to get sidetracked into Criterion.rs just yet, and maybe <code>cargo bench</code> will reach stable before I have to – but I’m inspired by nnethercote’s <a class="external" rel="nofollow noreferrer" href="https://nnethercote.github.io/perf-book/benchmarking.html">advice</a> that <em>“Mediocre benchmarking is far better than no benchmarking”</em>. Results are very consistent across multiple timing runs, within a millisecond or two, including with the order reversed. Standard <code>--release</code> build, <code>stable-x86_64-pc-windows-msvc</code> toolchain, AMD Ryzen 7 3700X 3.6 Ghz.</p>
+<p>What I’m doing: outside of timing, read in a plaintext copy of Project Gutenberg’s <em>The Complete Works of William Shakespeare</em> and lowercase it. Inside timing, split it into a sequence of word <code>&amp;str</code>s using <a class="external" rel="nofollow noreferrer" href="https://crates.io/crates/unicode-segmentation"><code>unicode_segmentation</code></a>, and use our various <code>get_mut_or_insert_default_*</code> functions to count the number of times each word occurs. Segmentation is fairly expensive, so I also time just the word iteration loop, giving us a baseline above which hashmapping will add overhead. Sample results from each timing are printed out as sanity/consistency checks and to prevent things getting optimized away.</p>
+<p>This is a scenario which should flatter the experiment: each word appears an average of 34 times, so ~97% of words seen have been seen before, and the actual work done for each appearance after the first is trivial, just incrementing a counter. It’s obviously not meant to represent the full range of real hashmap usage, but it’s real data and doing something at least vaguely interesting. (Did you know Shakespeare never used the word “sausage”? Or “aardvark”.)</p>
+<table><thead><tr><th style="text-align: left">Test</th><th style="text-align: right">Wall time (ms)</th><th style="text-align: right">Over baseline (ms)</th></tr></thead><tbody>
+<tr><td style="text-align: left"><code>baseline</code></td><td style="text-align: right">104</td><td style="text-align: right">-</td></tr>
+<tr><td style="text-align: left"><code>std_naive</code></td><td style="text-align: right">200</td><td style="text-align: right">96</td></tr>
+<tr><td style="text-align: left"><code>std_doublelookup</code></td><td style="text-align: right">148</td><td style="text-align: right">44</td></tr>
+<tr><td style="text-align: left"><code>hashbrown_raw</code></td><td style="text-align: right">118</td><td style="text-align: right">14</td></tr>
+<tr><td style="text-align: left"><code>hashbrown_nice</code></td><td style="text-align: right">119</td><td style="text-align: right">15</td></tr>
+</tbody></table>
+<p>That’s… actually more impactful than I expected. Over twice as fast with double lookup, and nearly 7 times as fast with <code>raw_entry_mut</code> or <code>entry_ref</code>.</p>
+<h2 id="tl-dr-and-next-steps"><a class="zola-anchor" href="#tl-dr-and-next-steps" aria-label="Anchor link for: tl-dr-and-next-steps">TL;DR and next steps</a></h2>
+<ul>
+<li><code>HashMap::entry</code> can be inefficient when keys are expensive to construct and often repeated</li>
+<li>Obvious mitigation is foiled by the dastardly borrow checker for now</li>
+<li>Underwhelming mitigation is underwhelming, but not entirely useless</li>
+<li><code>hashbrown</code>’s <code>raw_entry_mut</code> API brings large gains, but is not (nor likely to be) exposed in stable <code>std</code></li>
+<li><code>hashbrown</code>’s <code>entry_ref</code> API is comparably fast and nicer, but isn’t even on the horizon for <code>std</code></li>
+</ul>
+<p>I’d like to try rolling these approaches up into an extension trait to complement the various owned-key methods and genericizing it to cover other applicable owned/reference type pairs, not just <code>String</code>/<code>&amp;str</code>. (I’d actually done some of this before doing the timings above, but don’t expect it to have affected the results.) This will be mainly a learning exercise in generics and trait design, and maybe a way to get my feet wet publishing to crates.io if it gets that far. This post is long enough already, though, so I’ll punt that to a possible future one. I’d also like to extend the benchmark to find the insert/overwrite ratio at which <code>std_doublelookup</code> becomes worth it, and how bad it is in the worst (no overwrites at all) case.</p>
+<p>Yes, these are serious intentions. No, I’m definitely not just putting off the dreaded day when I get to the <code>async</code> chapter.</p>
+<p>Regardless of outcome, it’s been an educational wander around some of Rust’s moving parts, especially small but important traits like <code>Borrow</code>, the relationship between <code>std</code> and its exploratory implementation crates, and some shadier corners of the borrow checker. I find this sort of magical mystery tour a much stickier way to learn than just reading or staying strictly within the bounds of a given exercise.</p>
+
+
+      <footer class="subtle">
+        <nav aria-label="Footer">
+          <a href="https://mrec.github.io/blog/about">about</a>
+          <a href="https://mrec.github.io/blog">archive</a>
+          <a href="mailto:mike.capp@gmail.com">email</a>
+          <a href="https://mrec.github.io/blog/atom.xml">feed</a>
+          <a href="https://github.com/mrec/blog">repo</a>
+        </nav>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+/* Reset (filtered for markdown) */
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, code, img, s, b, u, i, ol, ul, li, table, caption, tbody, tfoot, thead, tr, th, td, details, footer, header, section, summary { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+body { line-height: 1; }
+blockquote { quotes: none; }
+blockquote::before, blockquote::after { content: none; }
+
+/* Properties */
+:root {
+	--color-link: #3367d6;
+	--color-link-v: #b0b;
+	--color-subtle-bg: #fafafa;
+	--color-subtle-line: #ccc;
+	--color-subtle-text: #767676; /* >4.5:1 contrast */
+	--color-xtrasubtle-bg: #fcfcfc;
+	--color-details-accent: #ced9e5;
+	--color-warn-fg: white; /* for code blocks */
+	--color-warn-bg: #d00; /* ditto */
+	--fade: 0.2s linear;
+}
+
+/* Standard elements */
+html { scroll-behavior: smooth; }
+body { font-family: "Segoe UI", sans-serif; margin: 0; }
+main { line-height: 1.5; margin: auto; max-width: 50rem; padding: 1rem; }
+p { margin: 1em 0; }
+h1, h2 { font-weight: normal; }
+h1 {  font-size: 2em; margin-bottom: 0.25em; line-height: 1.3; }
+h2 {  font-size: 1.4em;  margin: 0.5em 0; }
+h2:not(h1 + h2) { border-top: 1px solid var(--color-subtle-line); margin-top: 1.5em; padding-top: 0.7em; }
+img { display: block; margin: 1em auto; }
+blockquote { font-style: italic; }
+
+/* Box content */
+blockquote, details { background-color: var(--color-xtrasubtle-bg); border: 1px solid var(--color-subtle-line); border-left-width: 8px; margin: 1em 0; }
+blockquote > *, details > * { margin: 0; padding: 0.6em 1em; }
+
+/* Hyperlinks */
+a { color: var(--color-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:visited { color: var(--color-link-v); }
+
+table { border-collapse: collapse; margin: 1em auto; }
+thead tr { background-color: var(--color-subtle-bg); font-weight: bold; }
+tbody tr:nth-child(even) { background-color: var(--color-xtrasubtle-bg); }
+th, td { border: 1px solid var(--color-subtle-line); padding: 0.5em; }
+ul { list-style: inside disc; padding-left: 0; }
+li { margin-left: 1em; text-indent: 1em hanging; }
+code { font-family: Consolas, monospace; font-size: 0.9em; }
+
+/* Furniture blocks (frontmatter and footer): deemphasize these to keep focus on content */
+.subtle, .subtle a, subtle a:visited { color: var(--color-subtle-text); font-size: 0.9rem; }
+
+/* Header banner */
+header { 
+	height: 100px; display: flex; align-items: center; justify-content: right; position: relative;
+	background-color: #6982AB; background-image: url("header-hero.webp"), url("header-repeat.webp"); background-repeat: no-repeat, repeat-x; 
+}
+header img#yakmask, header div#shavemask { display:block; position: absolute; left: 0; top: 0; min-width:128px; height: 100px; margin: 0; }
+header div#shavemask { cursor: image-set(url("razor.webp") 1x, url("razor-2x.webp") 2x), auto /* just amusing myself */; }
+header a#homelink { 
+	display: block; position: relative; max-width: 180px; font-size: 24px; margin: 0 10px 0 10px; padding: 12px; text-align: right; 
+	text-shadow: -2px 2px 7px black, -2px 2px 7px black, -2px 2px 7px black; 
+	text-transform: lowercase;
+}
+header a#homelink, header a#homelink:visited { color:white; } /* don't make this a property, it won't change in dark mode */
+
+/* Footer */
+footer nav { 
+	display: flex; justify-content: space-between; gap: 1.8em; flex-wrap: wrap; width: 100%; 
+	border: solid var(--color-subtle-line); border-width: 1px 0; margin: 3em 0 2em 0; padding: 0.7em 0 0.7em 0;
+	text-transform: lowercase;
+	font-size: 0.9rem; 
+}
+
+/* Details shortcode (sub-yak) */
+details { font-size: small; line-height: 1.7; border-color: var(--color-details-accent); }
+details > summary { background-color: var(--color-subtle-bg); transition: background-color var(--fade); cursor: zoom-in; }
+details > summary:hover, details:open > summary { background-color: var(--color-details-accent); }
+details:open > summary { border-bottom: 1px solid var(--color-details-accent); cursor: zoom-out; }
+details > p { margin: 0; opacity: 0; }
+details:open > p { opacity: 1; transition: opacity var(--fade); }
+details > pre, details > blockquote { margin: 0 1em; }
+details > blockquote::before { top: 0.25em; left: 0.4em; }
+
+/* Block quotes */
+blockquote { position: relative; }
+blockquote::before { content: "“"; color: var(--color-subtle-line); font-size: 4em; font-family:Georgia, serif; position: absolute; top: 0.1em; left: 0.15em; line-height: 1; }
+blockquote > p:first-child { text-indent: 2em; }
+
+/* Inline code */
+code:not(pre code) { background-color: var(--color-subtle-bg); border: 1px solid #ddd; border-radius: 0.3em; padding: 0 0.1em; }
+
+/* Syntax-highlighted code blocks */
+pre { border: 1px solid var(--color-subtle-line); padding: 0.6em 1em; }
+pre code { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; }
+pre[data-name="invalid"] span:first-of-type { /* note, need important! to override highlighter's style attributes */
+	color: var(--color-warn-fg) !important; font-style: normal !important; text-decoration: none !important; font-weight: bold !important;
+	background-color: var(--color-warn-bg); font-family: sans-serif;  line-height: 1; display: block;
+	border: 2px solid var(--color-warn-fg); padding: 0.3em 0.5em;
+}
+@media (hover: hover) { /* show warning as overlay, hide on mouseover */
+	pre[data-name="invalid"] { position: relative; }
+	pre[data-name="invalid"] span:first-of-type { /* first line of code must be a (brief!) comment */
+		margin: 0.5em; position: absolute; right: 0; top: 0; 
+		opacity: 1; transition: opacity var(--fade); 
+	}
+	pre[data-name="invalid"]:hover span:first-of-type {
+		opacity: 0;
+	}
+}
+
+/* Link targets for h1, h2 etc */
+a.zola-anchor {  color: inherit; display: inline-block; position: relative; text-decoration: none /* even for prefers-contrast:more since this isn't a "real" link */; }
+a.zola-anchor::before { content: "§"; position: absolute; left: -0.8em; opacity: 0; transition: opacity var(--fade); }
+a.zola-anchor:hover::before { opacity: 1; }
+
+/* Meta information shown under the post title */
+p.frontmatter { margin: 0 0 1.5em 0; }
+p.frontmatter a { text-decoration: underline /* it's mixed with non-link text in the same colour */; }
+
+/* Accessibility accommodations */
+@media (prefers-contrast: more) { /* replace with no-preference to test */
+	:root {
+		--color-subtle-line: grey;
+		--color-subtle-text: black;
+	}
+	a { text-decoration: underline; } /* note that a.zola-anchor is a deliberate exception */
+	header a { background-color: #000a; border-radius: 0.5em; box-shadow: 0 0 0.5em #000a; }
+}
